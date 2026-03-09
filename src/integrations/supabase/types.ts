@@ -14,16 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      disputes: {
+        Row: {
+          admin_notes: string | null
+          created_at: string | null
+          gig_id: string
+          id: string
+          raised_by: string
+          reason: string
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["dispute_status"]
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string | null
+          gig_id: string
+          id?: string
+          raised_by: string
+          reason: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string | null
+          gig_id?: string
+          id?: string
+          raised_by?: string
+          reason?: string
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gigs: {
+        Row: {
+          budget: number
+          category: Database["public"]["Enums"]["gig_category"]
+          client_confirmed: boolean | null
+          client_id: string
+          completion_pin: string | null
+          created_at: string | null
+          description: string
+          hustler_confirmed: boolean | null
+          hustler_id: string | null
+          id: string
+          location: string
+          status: Database["public"]["Enums"]["gig_status"]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          budget: number
+          category?: Database["public"]["Enums"]["gig_category"]
+          client_confirmed?: boolean | null
+          client_id: string
+          completion_pin?: string | null
+          created_at?: string | null
+          description: string
+          hustler_confirmed?: boolean | null
+          hustler_id?: string | null
+          id?: string
+          location: string
+          status?: Database["public"]["Enums"]["gig_status"]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number
+          category?: Database["public"]["Enums"]["gig_category"]
+          client_confirmed?: boolean | null
+          client_id?: string
+          completion_pin?: string | null
+          created_at?: string | null
+          description?: string
+          hustler_confirmed?: boolean | null
+          hustler_id?: string | null
+          id?: string
+          location?: string
+          status?: Database["public"]["Enums"]["gig_status"]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gigs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gigs_hustler_id_fkey"
+            columns: ["hustler_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          gig_id: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          gig_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          gig_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          id_number: string | null
+          kyc_status: Database["public"]["Enums"]["kyc_status"] | null
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
+          selfie_url: string | null
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          id_number?: string | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"] | null
+          selfie_url?: string | null
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          id_number?: string | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"] | null
+          selfie_url?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          from_user_id: string | null
+          gig_id: string | null
+          id: string
+          to_user_id: string | null
+          type: Database["public"]["Enums"]["txn_type"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          from_user_id?: string | null
+          gig_id?: string | null
+          id?: string
+          to_user_id?: string | null
+          type: Database["public"]["Enums"]["txn_type"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          from_user_id?: string | null
+          gig_id?: string | null
+          id?: string
+          to_user_id?: string | null
+          type?: Database["public"]["Enums"]["txn_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_kyc_status: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["kyc_status"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_gig_participant: {
+        Args: { _gig_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "client" | "hustler" | "admin"
+      dispute_status:
+        | "open"
+        | "under_review"
+        | "resolved_client"
+        | "resolved_hustler"
+      gig_category: "errand" | "pickup" | "delivery" | "shopping" | "other"
+      gig_status:
+        | "open"
+        | "accepted"
+        | "in_progress"
+        | "pending_confirmation"
+        | "completed"
+        | "disputed"
+        | "cancelled"
+      kyc_status: "pending" | "approved" | "rejected"
+      txn_type: "hold" | "release" | "refund" | "top_up"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +441,26 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["client", "hustler", "admin"],
+      dispute_status: [
+        "open",
+        "under_review",
+        "resolved_client",
+        "resolved_hustler",
+      ],
+      gig_category: ["errand", "pickup", "delivery", "shopping", "other"],
+      gig_status: [
+        "open",
+        "accepted",
+        "in_progress",
+        "pending_confirmation",
+        "completed",
+        "disputed",
+        "cancelled",
+      ],
+      kyc_status: ["pending", "approved", "rejected"],
+      txn_type: ["hold", "release", "refund", "top_up"],
+    },
   },
 } as const
