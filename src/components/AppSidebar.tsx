@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Briefcase, Wallet, PlusCircle, ShoppingBag, DollarSign,
-  Users, Shield, AlertTriangle, LogOut,
+  Users, Shield, AlertTriangle, LogOut, User,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +15,7 @@ const clientLinks = [
   { title: "My Wallet", url: "/wallet", icon: Wallet },
   { title: "Post a Gig", url: "/post-gig", icon: PlusCircle },
   { title: "My Gigs", url: "/my-gigs", icon: Briefcase },
+  { title: "Profile", url: "/profile", icon: User },
 ];
 
 const hustlerLinks = [
@@ -22,6 +23,7 @@ const hustlerLinks = [
   { title: "Marketplace", url: "/marketplace", icon: ShoppingBag },
   { title: "My Jobs", url: "/my-jobs", icon: Briefcase },
   { title: "Earnings", url: "/earnings", icon: DollarSign },
+  { title: "Profile", url: "/profile", icon: User },
 ];
 
 const adminLinks = [

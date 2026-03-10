@@ -27,6 +27,7 @@ import AdminGigsPage from "./pages/admin/AdminGigsPage";
 import AdminDisputesPage from "./pages/admin/AdminDisputesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import NotFound from "./pages/NotFound";
+import ProfilePage from "./pages/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -53,8 +54,7 @@ function App() {
             <Route path="/gig/:id" element={<ProtectedRoute><GigDetailPage /></ProtectedRoute>} />
             <Route path="/marketplace" element={<ProtectedRoute><MarketplacePage /></ProtectedRoute>} />
             <Route path="/my-jobs" element={<ProtectedRoute><MyJobsPage /></ProtectedRoute>} />
-            <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
+            <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />            <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
             <Route path="/admin/kyc" element={<ProtectedRoute requireRole="admin"><AdminKYCPage /></ProtectedRoute>} />
             <Route path="/admin/gigs" element={<ProtectedRoute requireRole="admin"><AdminGigsPage /></ProtectedRoute>} />
             <Route path="/admin/disputes" element={<ProtectedRoute requireRole="admin"><AdminDisputesPage /></ProtectedRoute>} />
