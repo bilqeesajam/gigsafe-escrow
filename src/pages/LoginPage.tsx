@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { profile } = useAuth();
+
+  // After successful login, check profile and redirect appropriately
+  useEffect(() => {
+    if (profile !== undefined && profile !== null) {
+      if (profile.role) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/choose-role", { replace: true });
+      }
+    }
+  }, [profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,9 +34,8 @@ export default function LoginPage() {
     setLoading(false);
     if (error) {
       toast.error(error.message);
-    } else {
-      navigate("/dashboard");
     }
+    // Profile will be fetched automatically by auth context, and useEffect will handle redirect
   };
 
   return (
@@ -42,15 +54,15 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" disabled={loading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" disabled={loading} />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Sign In
+              {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           <p className="text-sm text-center text-muted-foreground mt-4">
