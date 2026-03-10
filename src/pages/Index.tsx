@@ -1,17 +1,37 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, Zap, Lock, ArrowRight, Moon, Sun } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Shield, Zap, Lock, ArrowRight, Moon, Sun, User, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 
 export default function Index() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const ThemeToggle = () => (
     <Button variant="ghost" size="icon" onClick={toggleTheme}>
       {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
+  );
+
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <User className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/profile">Profile</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={signOut} className="text-destructive">
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 
   return (
@@ -24,7 +44,10 @@ export default function Index() {
           <div className="flex gap-2">
             <ThemeToggle />
             {user ? (
-              <Button asChild><Link to="/dashboard">Dashboard</Link></Button>
+              <>
+                <Button asChild><Link to="/dashboard">Dashboard</Link></Button>
+                <UserMenu />
+              </>
             ) : (
               <>
                 <Button variant="ghost" asChild><Link to="/login">Sign In</Link></Button>
