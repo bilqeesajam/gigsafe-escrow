@@ -31,8 +31,11 @@ export default function LoginPage() {
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
+            <Link to="/">
             Gig<span className="text-primary">Hold</span>
+            </Link>
           </CardTitle>
+          
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>

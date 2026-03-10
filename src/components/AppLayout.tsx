@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -20,6 +21,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <NotificationBell />
             </div>
           </header>

@@ -1,19 +1,36 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, Zap, Lock, ArrowRight } from "lucide-react";
+import { Shield, Zap, Lock, ArrowRight, Moon, Sun } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 
 export default function Index() {
+  const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
+  const ThemeToggle = () => (
+    <Button variant="ghost" size="icon" onClick={toggleTheme}>
+      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
       <header className="border-b">
         <div className="container flex items-center justify-between h-16">
           <h1 className="text-xl font-bold">
             Gig<span className="text-primary">Hold</span>
           </h1>
           <div className="flex gap-2">
-            <Button variant="ghost" asChild><Link to="/login">Sign In</Link></Button>
-            <Button asChild><Link to="/signup">Get Started</Link></Button>
+            <ThemeToggle />
+            {user ? (
+              <Button asChild><Link to="/dashboard">Dashboard</Link></Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild><Link to="/login">Sign In</Link></Button>
+                <Button asChild><Link to="/signup">Get Started</Link></Button>
+              </>
+            )}
           </div>
         </div>
       </header>

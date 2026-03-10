@@ -55,7 +55,7 @@ export function NotificationBell() {
             <Button variant="ghost" size="sm" className="text-xs h-7" onClick={markAllRead}>Mark all read</Button>
           )}
         </div>
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="w-full max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">No notifications</p>
           ) : notifications.map((n) => (

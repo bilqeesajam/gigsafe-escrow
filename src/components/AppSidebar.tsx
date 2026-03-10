@@ -8,6 +8,7 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import { Link } from "react-router-dom";
 
 const clientLinks = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -45,9 +46,11 @@ export function AppSidebar() {
       <SidebarContent className="bg-sidebar">
         <div className="p-4 border-b border-sidebar-border">
           {!collapsed && (
-            <h1 className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
-              Gig<span className="text-primary">Hold</span>
-            </h1>
+            <Link to="/">
+              <h1 className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
+                Gig<span className="text-primary">Hold</span>
+              </h1>
+            </Link>
           )}
           {collapsed && <span className="text-primary font-bold text-lg">G</span>}
         </div>

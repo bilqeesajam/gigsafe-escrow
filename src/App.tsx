@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import Index from "./pages/Index";
@@ -13,13 +14,13 @@ import ChooseRolePage from "./pages/ChooseRolePage";
 import KYCPage from "./pages/KYCPage";
 import KYCPendingPage from "./pages/KYCPendingPage";
 import DashboardRedirect from "./pages/DashboardRedirect";
-import WalletPage from "./pages/WalletPage";
-import PostGigPage from "./pages/PostGigPage";
-import MyGigsPage from "./pages/MyGigsPage";
+import WalletPage from "./pages/users/WalletPage";
+import PostGigPage from "./pages/users/PostGigPage";
+import MyGigsPage from "./pages/users/MyGigsPage";
 import GigDetailPage from "./pages/GigDetailPage";
-import MarketplacePage from "./pages/MarketplacePage";
-import MyJobsPage from "./pages/MyJobsPage";
-import EarningsPage from "./pages/EarningsPage";
+import MarketplacePage from "./pages/hustlers/MarketplacePage";
+import MyJobsPage from "./pages/hustlers/MyJobsPage";
+import EarningsPage from "./pages/hustlers/EarningsPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminKYCPage from "./pages/admin/AdminKYCPage";
 import AdminGigsPage from "./pages/admin/AdminGigsPage";
@@ -29,13 +30,15 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<LoginPage />} />
@@ -61,7 +64,9 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+  </ThemeProvider>
   </QueryClientProvider>
 );
+}
 
 export default App;
