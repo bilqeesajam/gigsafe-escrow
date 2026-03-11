@@ -17,10 +17,9 @@ export default function ChooseRolePage() {
     setLoading(true);
     const { error } = await supabase.from("profiles").upsert({ id: user.id, role });
     if (error) {
+      console.error("Role selection error:", error);
       toast.error(error.message);
     } else {
-      // Also insert into user_roles table
-      await supabase.from("user_roles").upsert({ user_id: user.id, role });
       await refreshProfile();
       navigate("/kyc");
     }

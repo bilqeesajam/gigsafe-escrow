@@ -27,6 +27,7 @@ export default function SignupPage() {
     });
     setLoading(false);
     if (error) {
+      console.error("Signup error:", error);
       toast.error(error.message);
     } else {
       toast.success("Account created! Check your email to confirm, or continue to set up your profile.");

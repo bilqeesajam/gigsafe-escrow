@@ -14,18 +14,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { session, profile } = useAuth();
 
   // After successful login, check profile and redirect appropriately
   useEffect(() => {
-    if (profile !== undefined && profile !== null) {
+    if (!session) return;
+    if (profile) {
       if (profile.role) {
         navigate("/dashboard", { replace: true });
       } else {
         navigate("/choose-role", { replace: true });
       }
     }
-  }, [profile, navigate]);
+  }, [session, profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

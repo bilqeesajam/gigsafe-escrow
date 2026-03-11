@@ -27,8 +27,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    setProfile(data);
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    if (error) {
+      console.error("Profile fetch error:", error.message, error.code);
+      return;
+    }
+    if (data) {
+      setProfile(data);
+      return;
+    }
+    // Profile doesn't exist — create one (user was created before trigger existed)
+    console.warn("No profile found, creating one for user:", userId);
+    const { error: insertError } = await supabase.from("profiles").insert({ id: userId });
+    if (insertError) {
+      console.error("Profile creation error:", insertError.message);
+      return;
+    }
+    // Fetch the newly created profile
+    const { data: newProfile } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    setProfile(newProfile);
   };
 
   const refreshProfile = async () => {
