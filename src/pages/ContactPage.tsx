@@ -1,9 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { THEME } from "@/lib/theme";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -37,44 +40,8 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f1a2b] to-[#1a2235]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f1a2b] border-b border-[#232c40]">
-        <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent border border-[#f5b800]">
-              <Shield className="h-5 w-5 text-[#f5b800]" />
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight">GigHold</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#c0c0c0]">
-            <Link to="/" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              Home
-            </Link>
-            <a href="/#how-it-works" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              How it works
-            </a>
-            <a href="/#features" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              Features
-            </a>
-            <a href="/#faq" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              FAQ
-            </a>
-          </nav>
-
-          {/* Auth Section */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-[#c0c0c0] hover:text-white hover:bg-[#232c40]">
-              <Link to="/login">Sign In</Link>
-            </Button>
-            <Button size="sm" className="bg-[#f5b800] text-[#0f1a2b] hover:bg-yellow-400">
-              <Link to="/signup">Get Started</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div style={{ backgroundImage: `linear-gradient(to bottom, ${THEME.primary.darkNavy}, ${THEME.primary.lightBlue})` }} className="min-h-screen">
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12 md:py-16 text-white">
@@ -209,18 +176,7 @@ export default function ContactPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#232c40] bg-[#0f1a2b] mt-20">
-        <div className="container mx-auto px-4 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#c0c0c0]">
-          <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
-          <div className="flex items-center gap-6">
-            <a href="/#how-it-works" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">How it works</a>
-            <a href="/#features" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">Features</a>
-            <a href="/#faq" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">FAQ</a>
-            <Link to="/signup" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">Get started</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

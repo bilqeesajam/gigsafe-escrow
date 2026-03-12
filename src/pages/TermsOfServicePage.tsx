@@ -1,87 +1,51 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { THEME } from "@/lib/theme";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f1a2b] to-[#1a2235]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f1a2b] border-b border-[#232c40]">
-        <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent border border-[#f5b800]">
-              <Shield className="h-5 w-5 text-[#f5b800]" />
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight">GigHold</span>
-          </Link>
-
-                    {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#c0c0c0]">
-            <Link to="/" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              Home
-            </Link>
-            <a href="/#how-it-works" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              How it works
-            </a>
-            <a href="/#features" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              Features
-            </a>
-            <a href="/#faq" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              FAQ
-            </a>
-          </nav>
-
-          {/* Auth Section */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-[#c0c0c0] hover:text-white hover:bg-[#232c40]">
-              <Link to="/login">Sign In</Link>
-            </Button>
-            <Button size="sm" className="bg-[#f5b800] text-[#0f1a2b] hover:bg-yellow-400">
-              <Link to="/signup">Get Started</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div style={{ backgroundImage: `linear-gradient(to bottom, ${THEME.primary.darkNavy}, ${THEME.primary.lightBlue})` }} className="min-h-screen">
+      <Navbar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12 md:py-16 text-white">
+      <main className="container mx-auto px-4 py-12 md:py-16" style={{ color: THEME.text.white }}>
         <div className="max-w-3xl mx-auto space-y-12">
           {/* Header */}
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Legal & Compliance</h1>
-            <p className="text-[#c0c0c0] text-lg">Last updated: March 4, 2026</p>
+            <p className="text-lg" style={{ color: THEME.text.primary }}>Last updated: March 4, 2026</p>
           </div>
 
           {/* Terms of Service Section */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-3xl font-bold text-[#f5b800] mb-6">Terms of Service</h2>
+              <h2 className="text-3xl font-bold mb-6" style={{ color: THEME.primary.gold }}>Terms of Service</h2>
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Neutral Third Party</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Neutral Third Party</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     "GigHold" acts as a neutral intermediary. Funds are secured via escrow and only released upon fulfillment of agreed contract terms. Both parties must adhere to the specified terms and conditions of their agreement.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Transaction Finality</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Transaction Finality</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     Once the Buyer selects "Release Funds," the transaction is considered complete and irreversible. This ensures finality and prevents disputes regarding payment after completion.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Dispute Mediation</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Dispute Mediation</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     In the event of a disagreement, "GigHold" will review uploaded evidence to provide an impartial resolution or refund. Our resolution team operates with strict neutrality to ensure fairness.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">User Accountability</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>User Accountability</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     Users must maintain verified profiles and utilize 2FA to ensure account security. Account holders are responsible for all activities conducted under their credentials.
                   </p>
                 </div>
@@ -90,33 +54,33 @@ export default function TermsOfServicePage() {
 
             {/* Privacy Policy Section */}
             <div>
-              <h2 className="text-3xl font-bold text-[#f5b800] mb-6">Privacy Policy</h2>
+              <h2 className="text-3xl font-bold mb-6" style={{ color: THEME.primary.gold }}>Privacy Policy</h2>
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Data Collection</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Data Collection</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     We collect essential financial and identity verification data to comply with global standards for financial security and anti-money laundering regulations. Only the minimum required information is collected.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Encryption</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Encryption</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     All personal and financial data is protected with industry-leading SSL/TLS encryption. Data in transit and at rest is secured using modern cryptography standards.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Third-Party Sharing</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Third-Party Sharing</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     Financial transactions are processed through PayFast. We do not sell your personal data to third parties. Any sharing is limited to payment processors and compliance authorities as required by law.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Cookie Policy</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Cookie Policy</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     We use tracking (Google Analytics/Plausible) to improve user experience and perform A/B testing on our service flow. You may opt-out through your browser settings.
                   </p>
                 </div>
@@ -125,26 +89,26 @@ export default function TermsOfServicePage() {
 
             {/* Data Retention Section */}
             <div>
-              <h2 className="text-3xl font-bold text-[#f5b800] mb-6">Data Retention & Compliance</h2>
+              <h2 className="text-3xl font-bold mb-6" style={{ color: THEME.primary.gold }}>Data Retention & Compliance</h2>
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Seven-Year Policy</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Seven-Year Policy</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     In accordance with financial regulations, all transaction records and evidence are retained for a period of 7 years. This ensures compliance with tax and regulatory authorities.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Unmodifiable Records</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Unmodifiable Records</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     Historical transaction data cannot be modified or deleted once a deal is finalized. This ensures transparency and prevents tampering with evidence.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Audit Trails</h3>
-                  <p className="text-[#c0c0c0] leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: THEME.text.white }}>Audit Trails</h3>
+                  <p className="leading-relaxed" style={{ color: THEME.text.primary }}>
                     Every report generated includes an encrypted audit trail for tax and accounting purposes. This provides complete transaction history and accountability.
                   </p>
                 </div>
@@ -153,26 +117,18 @@ export default function TermsOfServicePage() {
           </div>
 
           {/* Footer Note */}
-          <div className="bg-[#232c40] border border-[#3a4456] rounded-xl p-6 text-center">
-            <p className="text-[#c0c0c0] text-sm">
+          <div className="border rounded-xl p-6 text-center" style={{
+            backgroundColor: THEME.primary.cardBlue,
+            borderColor: THEME.primary.borderGray,
+          }}>
+            <p className="text-sm" style={{ color: THEME.text.primary }}>
               Last Updated: March 4, 2026 | Current Version: v2.4.0
             </p>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#232c40] bg-[#0f1a2b] mt-20">
-        <div className="container mx-auto px-4 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#c0c0c0]">
-          <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
-          <div className="flex items-center gap-6">
-            <a href="/#how-it-works" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">How it works</a>
-            <a href="/#features" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">Features</a>
-            <a href="/#faq" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">FAQ</a>
-            <Link to="/signup" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">Get started</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

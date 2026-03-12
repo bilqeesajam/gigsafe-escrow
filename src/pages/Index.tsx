@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
-  Shield,
   ArrowRight,
   Lock,
   Zap,
@@ -13,17 +11,14 @@ import {
   Truck,
   Search,
   Banknote,
-  User,
-  LogOut,
-  Menu,
-  X,
+  Shield,
 } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
 import { useState, useMemo } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { THEME } from "@/lib/theme";
 
 export default function Index() {
-  const { user, signOut } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const faqData = [
@@ -52,118 +47,42 @@ export default function Index() {
     return faqCategories.map((category) => ({ category, items: filteredFAQ.filter((item) => item.category === category) }));
   }, [filteredFAQ]);
 
-  const UserMenu = () => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <User className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link to="/profile">Profile</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={signOut} className="text-destructive">
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign Out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f1a2b] to-[#1a2235]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f1a2b] border-b border-[#232c40]">
-        <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent border border-[#f5b800]">
-              <Shield className="h-5 w-5 text-[#f5b800]" />
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight">GigHold</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#c0c0c0]">
-            <Link to="/" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              How it works
-            </Link>
-            <a href="#features" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              Features
-            </a>
-            <a href="#faq" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
-              FAQ
-            </a>
-          </nav>
-
-          {/* Auth Section */}
-          <div className="flex items-center gap-2">
-            {user ? (
-              <>
-                <Button asChild size="sm" className="hidden sm:inline-flex">
-                  <Link to="/dashboard">Dashboard</Link>
-                </Button>
-                <UserMenu />
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" className="text-[#c0c0c0] hover:text-white hover:bg-[#232c40]">
-                  <Link to="/login">Sign In</Link>
-                </Button>
-                <Button size="sm" className="bg-[#f5b800] text-[#0f1a2b] hover:bg-yellow-400">
-                  <Link to="/signup">Get Started</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <div style={{ backgroundImage: `linear-gradient(to bottom, ${THEME.primary.darkNavy}, ${THEME.primary.lightBlue})` }} className="min-h-screen">
+      <Navbar showLandingNav={true} />
 
       {/* Hero Section */}
-      <section className="w-full py-20 md:py-32 text-white">
+      <section className="w-full py-20 md:py-32" style={{ color: THEME.text.white }}>
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
             The Service Marketplace<br />
-            <span className="text-[#f5b800]">With Built-In Escrow</span>
+            <span style={{ color: THEME.primary.gold }}>With Built-In Escrow</span>
           </h1>
-          <p className="text-lg md:text-xl text-[#c0c0c0] mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed" style={{ color: THEME.text.primary }}>
             Post tasks, hire trusted hustlers, and pay securely. Funds are held until the job is verified complete — protecting both parties.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 h-12 bg-[#f5b800] hover:bg-yellow-400 text-[#0f1a2b]">
+            <Button asChild size="lg" className="text-base px-8 h-12 hover:bg-yellow-400" style={{ backgroundColor: THEME.primary.gold, color: THEME.primary.darkNavy }}>
               <Link to="/signup">
                 Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border-[#232c40] bg-[#1a2235] text-white hover:bg-[#232c40]">
+            <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border text-white hover:bg-[#232c40]" style={{ borderColor: THEME.primary.cardBlue, backgroundColor: THEME.primary.lightBlue }}>
               <Link to="/login">
                 Sign In
               </Link>
             </Button>
           </div>
-          {/* <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
-            <div>
-              <p className="text-2xl font-bold text-[#f5b800]">256-bit</p>
-              <p className="text-sm text-[#c0c0c0] mt-1">Encryption</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#f5b800]">100%</p>
-              <p className="text-sm text-[#c0c0c0] mt-1">Transparent</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#f5b800]">24/7</p>
-              <p className="text-sm text-[#c0c0c0] mt-1">Support</p>
-            </div>
-          </div> */}
+
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="w-full bg-[#1a2235]/50 text-white py-20">
+      <section id="features" className="w-full py-20" style={{ backgroundColor: 'rgba(26, 34, 53, 0.5)', color: THEME.text.white }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#f5b800] mb-4">Why choose GigHold?</h2>
-            <p className="text-[#c0c0c0] max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>Why choose GigHold?</h2>
+            <p className="max-w-2xl mx-auto" style={{ color: THEME.text.primary }}>
               Every feature is designed to protect both parties and keep deals moving forward.
             </p>
           </div>
@@ -202,13 +121,23 @@ export default function Index() {
             ].map(({ Icon, title, description }) => (
               <div
                 key={title}
-                className="bg-[#232c40] border border-[#3a4456] rounded-xl p-6 hover:border-[#f5b800] transition-colors group"
+                className="border rounded-xl p-6 transition-colors group"
+                style={{ 
+                  backgroundColor: THEME.primary.cardBlue,
+                  borderColor: THEME.primary.borderGray,
+                  '--group-hover-border': THEME.primary.gold
+                } as any}
               >
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-[#3a4456] mb-4 group-hover:bg-[#f5b800]/20 transition-colors border border-[#4a5466] group-hover:border-[#f5b800]">
-                  <Icon className="h-6 w-6 text-[#f5b800] group-hover:text-yellow-300" />
+                <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg mb-4 transition-colors border group-hover:transition-colors" style={{
+                  backgroundColor: THEME.primary.borderGray,
+                  borderColor: THEME.primary.borderGray,
+                  '--group-hover-bg': 'rgba(245, 184, 0, 0.2)',
+                  '--group-hover-border': THEME.primary.gold
+                } as any}>
+                  <Icon className="h-6 w-6" style={{ color: THEME.primary.gold }} />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{description}</p>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: THEME.text.white }}>{title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: THEME.text.primary }}>{description}</p>
               </div>
             ))}
           </div>
@@ -216,14 +145,14 @@ export default function Index() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="w-full bg-[#0f1a2b] text-white py-20">
+      <section id="how-it-works" className="w-full py-20" style={{ backgroundColor: THEME.primary.darkNavy, color: THEME.text.white }}>
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#f5b800] mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>
                 How it works
               </h2>
-              <p className="text-[#c0c0c0] max-w-lg mx-auto">
+              <p className="max-w-lg mx-auto" style={{ color: THEME.text.primary }}>
                 Simple steps from agreement to payment. Both sides stay informed at every stage.
               </p>
             </div>
@@ -256,12 +185,18 @@ export default function Index() {
                   Icon: Banknote,
                 },
               ].map(({ Icon, title, description }, idx) => (
-                <div key={title} className="bg-[#232c40] border border-[#3a4456] rounded-xl p-6 hover:border-[#f5b800] transition-colors relative">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-[#f5b800]/20 mb-4 border border-[#f5b800]/30">
-                    <Icon className="h-6 w-6 text-[#f5b800]" />
+                <div key={title} className="border rounded-xl p-6 transition-colors relative" style={{
+                  backgroundColor: THEME.primary.cardBlue,
+                  borderColor: THEME.primary.borderGray,
+                }}>
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg mb-4 border" style={{
+                    backgroundColor: 'rgba(245, 184, 0, 0.2)',
+                    borderColor: 'rgba(245, 184, 0, 0.3)'
+                  }}>
+                    <Icon className="h-6 w-6" style={{ color: THEME.primary.gold }} />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
-                  <p className="text-sm text-[#c0c0c0] leading-relaxed">{description}</p>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: THEME.text.white }}>{title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: THEME.text.primary }}>{description}</p>
                 </div>
               ))}
             </div>
@@ -270,25 +205,32 @@ export default function Index() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="w-full bg-[#1a2235]/50 text-white py-20">
+      <section id="faq" className="w-full py-20" style={{ backgroundColor: 'rgba(26, 34, 53, 0.5)', color: THEME.text.white }}>
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#f5b800] mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>
                 Frequently Asked Questions
               </h2>
-              <p className="text-[#c0c0c0] max-w-lg mx-auto mb-8">
+              <p className="max-w-lg mx-auto mb-8" style={{ color: THEME.text.primary }}>
                 Find answers to common questions about GigHold
               </p>
               {/* Search Box */}
               <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-4 top-3.5 h-5 w-5 text-[#c0c0c0]" />
+                <Search className="absolute left-4 top-3.5 h-5 w-5" style={{ color: THEME.text.primary }} />
                 <input
                   type="text"
                   placeholder="Search common questions here"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 bg-[#232c40] border border-[#3a4456] text-white placeholder:text-[#8b95ac] focus:border-[#f5b800] focus:outline-none h-11 rounded-lg transition-colors"
+                  className="w-full pl-12 border rounded-lg h-11 transition-colors focus:outline-none"
+                  style={{
+                    backgroundColor: THEME.primary.cardBlue,
+                    borderColor: THEME.primary.borderGray,
+                    color: THEME.text.white,
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = THEME.primary.gold}
+                  onBlur={(e) => e.target.style.borderColor = THEME.primary.borderGray}
                 />
               </div>
             </div>
@@ -297,20 +239,26 @@ export default function Index() {
             <div className="space-y-6">
               {groupedFAQ.map((section) => (
                 section.items.length > 0 && (
-                  <div key={section.category} className="bg-[#232c40] border border-[#3a4456] rounded-xl overflow-hidden hover:border-[#f5b800]/50 transition-colors">
-                    <div className="bg-[#1a2235] px-6 py-4 border-b border-[#3a4456]">
-                      <h3 className="text-lg font-semibold text-[#f5b800]">
+                  <div key={section.category} className="border rounded-xl overflow-hidden transition-colors" style={{
+                    backgroundColor: THEME.primary.cardBlue,
+                    borderColor: THEME.primary.borderGray,
+                  }}>
+                    <div className="px-6 py-4 border-b" style={{
+                      backgroundColor: THEME.primary.lightBlue,
+                      borderColor: THEME.primary.borderGray,
+                    }}>
+                      <h3 className="text-lg font-semibold" style={{ color: THEME.primary.gold }}>
                         {section.category}
                       </h3>
                     </div>
                     <div className="px-6 py-4">
                       <Accordion type="single" collapsible className="w-full">
                         {section.items.map((item) => (
-                          <AccordionItem key={item.id} value={item.id} className="border-[#3a4456]">
-                            <AccordionTrigger className="text-left hover:no-underline text-white hover:text-[#f5b800] transition-colors py-3">
+                          <AccordionItem key={item.id} value={item.id} style={{ borderColor: THEME.primary.borderGray }}>
+                            <AccordionTrigger className="text-left hover:no-underline transition-colors py-3" style={{ color: THEME.text.white }}>
                               {item.question}
                             </AccordionTrigger>
-                            <AccordionContent className="text-[#c0c0c0] pt-2 pb-4">
+                            <AccordionContent className="pt-2 pb-4" style={{ color: THEME.text.primary }}>
                               {item.answer}
                             </AccordionContent>
                           </AccordionItem>
@@ -322,9 +270,12 @@ export default function Index() {
               ))}
 
               {filteredFAQ.length === 0 && (
-                <div className="bg-[#232c40] border border-[#3a4456] rounded-xl p-8 text-center">
-                  <p className="text-[#c0c0c0]">
-                    No results found for "<span className="text-[#f5b800]">{searchQuery}</span>". Try different keywords.
+                <div className="border rounded-xl p-8 text-center" style={{
+                  backgroundColor: THEME.primary.cardBlue,
+                  borderColor: THEME.primary.borderGray,
+                }}>
+                  <p style={{ color: THEME.text.primary }}>
+                    No results found for "<span style={{ color: THEME.primary.gold }}>{searchQuery}</span>". Try different keywords.
                   </p>
                 </div>
               )}
@@ -334,22 +285,22 @@ export default function Index() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full bg-[#1a2235]/50 text-white py-20">
+      <section className="w-full py-20" style={{ backgroundColor: 'rgba(26, 34, 53, 0.5)', color: THEME.text.white }}>
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-[#f5b800]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>
               Ready to make your next deal safer?
             </h2>
-            <p className="text-lg mb-8 max-w-xl mx-auto text-[#c0c0c0]">
+            <p className="text-lg mb-8 max-w-xl mx-auto" style={{ color: THEME.text.primary }}>
               Create your first gig transaction in minutes. No complexity, no hidden fees. Just secure, transparent escrow.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" className="text-base px-8 h-12 bg-[#f5b800] hover:bg-yellow-400 text-[#0f1a2b]">
+              <Button asChild size="lg" className="text-base px-8 h-12" style={{ backgroundColor: THEME.primary.gold, color: THEME.primary.darkNavy }}>
                 <Link to="/signup">
                   Get Started Now <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border-[#232c40] bg-[#1a2235] text-white hover:bg-[#232c40]">
+              <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border text-white" style={{ borderColor: THEME.primary.cardBlue, backgroundColor: THEME.primary.lightBlue }}>
                 <Link to="/login">
                   Already have an account?
                 </Link>
@@ -359,57 +310,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[#232c40] bg-[#0f1a2b]">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            {/* Brand */}
-            <div>
-              <Link to="/" className="flex items-center gap-2.5 mb-4">
-                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent border border-[#f5b800]">
-                  <Shield className="h-4 w-4 text-[#f5b800]" />
-                </div>
-                <span className="font-bold text-white">GigHold</span>
-              </Link>
-              <p className="text-[#c0c0c0] text-sm">Secure escrow for every gig transaction.</p>
-            </div>
-
-            {/* Product */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <div className="space-y-3 text-sm text-[#c0c0c0]">
-                <a href="#features" className="hover:text-[#f5b800] transition-colors">Features</a>
-                <a href="#how-it-works" className="block hover:text-[#f5b800] transition-colors">How it Works</a>
-                <a href="#faq" className="block hover:text-[#f5b800] transition-colors">FAQ</a>
-                <Link to="/pricing" className="block hover:text-[#f5b800] transition-colors">Pricing</Link>
-              </div>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <div className="space-y-3 text-sm text-[#c0c0c0]">
-                <Link to="/contact" onClick={() => window.scrollTo(0, 0)} className="block hover:text-[#f5b800] transition-colors">Contact Us</Link>
-              </div>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <div className="space-y-3 text-sm text-[#c0c0c0]">
-                <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="block hover:text-[#f5b800] transition-colors">Terms of Service</Link>
-                <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="block hover:text-[#f5b800] transition-colors">Privacy Policy</Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-[#232c40] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#c0c0c0]">
-            <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
-            <Link to="/signup" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">Get started</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
