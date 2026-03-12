@@ -1,8 +1,27 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Shield,
+  ArrowRight,
+  Lock,
+  Zap,
+  CheckCircle,
+  MapPin,
+  Handshake,
+  Truck,
+  Mail,
+  Phone,
+  Search,
+  Banknote,
+  User,
+  LogOut,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { THEME } from "@/lib/theme";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 export default function PricingPage() {
   const pricingTiers = [
@@ -13,17 +32,93 @@ export default function PricingPage() {
     { from: "R500,001.00", to: "R1,000,000.00", percentage: "0.5%" },
   ];
 
+  const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const ThemeToggle = () => (
+    <Button variant="ghost" size="icon" onClick={toggleTheme}>
+      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+
+  const UserMenu = () => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <User className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link to="/profile">Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={signOut} className="text-destructive">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+const navLinkStyle = "relative hover:text-primary transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full";
   return (
-    <div style={{ backgroundImage: `linear-gradient(to bottom, ${THEME.primary.darkNavy}, ${THEME.primary.lightBlue})` }} className="min-h-screen">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-b from-[#0f1a2b] to-[#1a2235]">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+        <div className="container mx-auto flex items-center justify-between h-16 px-4">
+          {/* Logo Section */}
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-lg font-bold text-foreground tracking-tight">
+              Gig<span className="text-primary">Hold</span>
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+            <a href="#how-it-works" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
+              How it works
+            </a>
+            <a href="#features" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
+              Features
+            </a>
+            <a href="#faq" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
+              FAQ
+            </a>
+          </nav>
+
+          {/* Auth & Theme Section */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            
+            {user ? (
+              <>
+                <Button asChild size="sm" className="hidden sm:inline-flex">
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                  <Link to="/login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12 md:py-16" style={{ color: THEME.text.white }}>
+      <main className="container mx-auto px-4 py-12 md:py-16 text-white">
         <div className="max-w-5xl mx-auto space-y-12">
           {/* Header */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Our Fees</h1>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: THEME.text.primary }}>
+            <p className="text-[#c0c0c0] text-lg max-w-2xl mx-auto">
               Transparent, tiered pricing that rewards higher-value transactions. No hidden fees, no surprises.
             </p>
           </div>
@@ -103,7 +198,72 @@ export default function PricingPage() {
         </div>
       </main>
 
-      <Footer />
+      {/* Footer */}
+      <footer className="border-t bg-card mt-20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <Link to="/" className="flex items-center gap-2.5 mb-4">
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-bold text-foreground">
+                  Gig<span className="text-primary">Hold</span>
+                </span>
+              </Link>
+              <p className="text-muted-foreground text-sm">
+                Secure escrow for every gig transaction.
+              </p>
+            </div>
+
+            {/* Product */}
+          <div>
+            <h4 className="font-semibold text-white mb-4">Product</h4>
+            <div className="space-y-3 text-sm" style={{ color: THEME.text.primary }}>
+              <Link to="/#features" className="hover:transition-colors block" style={{ '--tw-text-hover': THEME.primary.gold } as any}>Features</Link>
+              <Link to="/#how-it-works" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>How it Works</Link>
+              <Link to="/#faq" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>FAQ</Link>
+              <Link to="/pricing" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>Pricing</Link>
+            </div>
+          </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Company</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/contact" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Terms of Service
+                </Link>
+                <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
+            <Link 
+              to="/signup" 
+              className={navLinkStyle}
+            >
+              Get started
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

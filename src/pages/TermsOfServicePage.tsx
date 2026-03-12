@@ -1,8 +1,11 @@
 import { THEME } from "@/lib/theme";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
+import { Shield } from "lucide-react";
 
 export default function TermsOfServicePage() {
+    const navLinkStyle = "relative hover:text-primary transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full";
   return (
     <div style={{ backgroundImage: `linear-gradient(to bottom, ${THEME.primary.darkNavy}, ${THEME.primary.lightBlue})` }} className="min-h-screen">
       <Navbar />
@@ -128,7 +131,71 @@ export default function TermsOfServicePage() {
         </div>
       </main>
 
-      <Footer />
+            <footer className="border-t bg-card mt-20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <Link to="/" className="flex items-center gap-2.5 mb-4">
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-bold text-foreground">
+                  Gig<span className="text-primary">Hold</span>
+                </span>
+              </Link>
+              <p className="text-muted-foreground text-sm">
+                Secure escrow for every gig transaction.
+              </p>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Product</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/#features" className="hover:text-primary transition-colors">Features</Link>
+                <Link to="/#how-it-works" className="hover:text-primary transition-colors">How it Works</Link>
+                <Link to="/#faq" className="hover:text-primary transition-colors">FAQ</Link>
+                <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+              </div>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Company</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/contact" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Terms of Service
+                </Link>
+                <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
+            <Link 
+              to="/signup" 
+              className={navLinkStyle}
+            >
+              Get started
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

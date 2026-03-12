@@ -25,9 +25,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Product</h4>
             <div className="space-y-3 text-sm" style={{ color: THEME.text.primary }}>
-              <a href="#features" className="hover:transition-colors block" style={{ '--tw-text-hover': THEME.primary.gold } as any}>Features</a>
-              <a href="#how-it-works" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>How it Works</a>
-              <a href="#faq" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>FAQ</a>
+              <Link to="/#features" className="hover:transition-colors block" style={{ '--tw-text-hover': THEME.primary.gold } as any}>Features</Link>
+              <Link to="/#how-it-works" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>How it Works</Link>
+              <Link to="/#faq" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>FAQ</Link>
               <Link to="/pricing" className="block hover:transition-colors" style={{ '--tw-text-hover': THEME.primary.gold } as any}>Pricing</Link>
             </div>
           </div>

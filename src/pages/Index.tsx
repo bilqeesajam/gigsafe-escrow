@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
+  Shield,
   ArrowRight,
   Lock,
   Zap,
@@ -11,15 +13,27 @@ import {
   Truck,
   Search,
   Banknote,
-  Shield,
+  User,
+  LogOut,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { useState, useMemo } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { THEME } from "@/lib/theme";
 
 export default function Index() {
+  const navLinkStyle = "relative hover:text-primary transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full";
+
+  const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const ThemeToggle = () => (
+    <Button variant="ghost" size="icon" onClick={toggleTheme}>
+      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
 
   const faqData = [
     { id: 'gs-1', category: 'Getting Started', question: "What is 'name'?", answer: "Your name is a unique identifier used to represent you on the platform. It helps other users identify you when working together on gigs." },
@@ -47,112 +61,122 @@ export default function Index() {
     return faqCategories.map((category) => ({ category, items: filteredFAQ.filter((item) => item.category === category) }));
   }, [filteredFAQ]);
 
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <User className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/profile">Profile</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={signOut} className="text-destructive">
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
-    <div style={{ backgroundImage: `linear-gradient(to bottom, ${THEME.primary.darkNavy}, ${THEME.primary.lightBlue})` }} className="min-h-screen">
-      <Navbar showLandingNav={true} />
+    <div className="min-h-screen bg-background">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+        <div className="container mx-auto flex items-center justify-between h-16 px-4">
+          {/* Logo Section */}
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-lg font-bold text-foreground tracking-tight">
+              Gig<span className="text-primary">Hold</span>
+            </span>
+          </Link>
 
-      {/* Hero Section */}
-      <section className="w-full py-20 md:py-32" style={{ color: THEME.text.white }}>
-        <div className="container mx-auto px-4 text-center max-w-3xl">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            The Service Marketplace<br />
-            <span style={{ color: THEME.primary.gold }}>With Built-In Escrow</span>
-          </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed" style={{ color: THEME.text.primary }}>
-            Post tasks, hire trusted hustlers, and pay securely. Funds are held until the job is verified complete — protecting both parties.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 h-12 hover:bg-yellow-400" style={{ backgroundColor: THEME.primary.gold, color: THEME.primary.darkNavy }}>
-              <Link to="/signup">
-                Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border text-white hover:bg-[#232c40]" style={{ borderColor: THEME.primary.cardBlue, backgroundColor: THEME.primary.lightBlue }}>
-              <Link to="/login">
-                Sign In
-              </Link>
-            </Button>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+            <a href="#how-it-works" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
+              How it works
+            </a>
+            <a href="#features" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
+              Features
+            </a>
+            <a href="#faq" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
+              FAQ
+            </a>
+          </nav>
+
+          {/* Auth & Theme Section */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            
+            {user ? (
+              <>
+                <Button asChild size="sm" className="hidden sm:inline-flex">
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                  <Link to="/login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
-
         </div>
-      </section>
+      </header>
 
-      {/* Features Section */}
-      <section id="features" className="w-full py-20" style={{ backgroundColor: 'rgba(26, 34, 53, 0.5)', color: THEME.text.white }}>
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>Why choose GigHold?</h2>
-            <p className="max-w-2xl mx-auto" style={{ color: THEME.text.primary }}>
-              Every feature is designed to protect both parties and keep deals moving forward.
-            </p>
+      <main>
+
+        <section className="container py-20 md:py-32 text-center max-w-3xl mx-auto animate-fade-in">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+            The Service Marketplace<br />
+            <span className="text-primary">With Built-In Escrow</span>
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+            Post tasks, hire hustlers, and pay securely. Funds are held until the job is verified complete — protecting both parties.
+          </p>
+          <div className="flex justify-center gap-3">
+            <Button size="lg" asChild>
+              <Link to="/signup">Start for Free <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/login">Sign In</Link>
+            </Button>
           </div>
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        </section>
+
+        <section id="features" className="container pb-20">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              {
-                title: "Escrow Protection",
-                description: "Funds are held securely until the job is verified complete.",
-                Icon: Lock,
-              },
-              {
-                title: "Fast Matching",
-                description: "Post a task and get matched with hustlers in your area instantly.",
-                Icon: Zap,
-              },
-              {
-                title: "Verified Users",
-                description: "All users go through KYC verification before accessing the platform.",
-                Icon: CheckCircle,
-              },
-              {
-                title: "Transparent Tracking",
-                description: "Real-time updates for complete visibility at every stage.",
-                Icon: MapPin,
-              },
-              {
-                title: "Dispute Resolution",
-                description: "Neutral third-parties to help reach fair resolutions.",
-                Icon: Shield,
-              },
-              {
-                title: "PIN Security",
-                description: "Additional layer of security with PIN verification on release.",
-                Icon: Lock,
-              },
-            ].map(({ Icon, title, description }) => (
-              <div
-                key={title}
-                className="border rounded-xl p-6 transition-colors group"
-                style={{ 
-                  backgroundColor: THEME.primary.cardBlue,
-                  borderColor: THEME.primary.borderGray,
-                  '--group-hover-border': THEME.primary.gold
-                } as any}
-              >
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg mb-4 transition-colors border group-hover:transition-colors" style={{
-                  backgroundColor: THEME.primary.borderGray,
-                  borderColor: THEME.primary.borderGray,
-                  '--group-hover-bg': 'rgba(245, 184, 0, 0.2)',
-                  '--group-hover-border': THEME.primary.gold
-                } as any}>
-                  <Icon className="h-6 w-6" style={{ color: THEME.primary.gold }} />
+              { icon: Lock, title: "Escrow Protection", desc: "Funds are held securely until the job is verified complete with a PIN." },
+              { icon: Zap, title: "Fast Matching", desc: "Post a task and get matched with hustlers in your area instantly." },
+              { icon: Shield, title: "Verified Users", desc: "All users go through KYC verification before accessing the platform." },
+            ].map((f) => (
+              <div key={f.title} className="rounded-xl border bg-card p-6 text-center space-y-3">
+                <div className="mx-auto rounded-full bg-primary/10 p-3 w-fit">
+                  <f.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: THEME.text.white }}>{title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: THEME.text.primary }}>{description}</p>
+                <h3 className="font-semibold">{f.title}</h3>
+                <p className="text-sm text-muted-foreground">{f.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="w-full py-20" style={{ backgroundColor: THEME.primary.darkNavy, color: THEME.text.white }}>
-        <div className="container mx-auto px-4">
+        <section id="how-it-works" className="container py-20">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-4">
                 How it works
               </h2>
-              <p className="max-w-lg mx-auto" style={{ color: THEME.text.primary }}>
+              <p className="text-muted-foreground max-w-lg mx-auto">
                 Simple steps from agreement to payment. Both sides stay informed at every stage.
               </p>
             </div>
@@ -185,52 +209,36 @@ export default function Index() {
                   Icon: Banknote,
                 },
               ].map(({ Icon, title, description }, idx) => (
-                <div key={title} className="border rounded-xl p-6 transition-colors relative" style={{
-                  backgroundColor: THEME.primary.cardBlue,
-                  borderColor: THEME.primary.borderGray,
-                }}>
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg mb-4 border" style={{
-                    backgroundColor: 'rgba(245, 184, 0, 0.2)',
-                    borderColor: 'rgba(245, 184, 0, 0.3)'
-                  }}>
-                    <Icon className="h-6 w-6" style={{ color: THEME.primary.gold }} />
+                <div key={title} className="rounded-xl border bg-card p-6 hover:border-primary transition-colors">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-primary/10 mb-4">
+                    <Icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: THEME.text.white }}>{title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: THEME.text.primary }}>{description}</p>
+                  <h3 className="text-lg font-semibold mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="w-full py-20" style={{ backgroundColor: 'rgba(26, 34, 53, 0.5)', color: THEME.text.white }}>
-        <div className="container mx-auto px-4">
+        <section id="faq" className="container py-20">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-4">
                 Frequently Asked Questions
               </h2>
-              <p className="max-w-lg mx-auto mb-8" style={{ color: THEME.text.primary }}>
+              <p className="text-muted-foreground max-w-lg mx-auto mb-8">
                 Find answers to common questions about GigHold
               </p>
               {/* Search Box */}
               <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-4 top-3.5 h-5 w-5" style={{ color: THEME.text.primary }} />
+                <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search common questions here"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 border rounded-lg h-11 transition-colors focus:outline-none"
-                  style={{
-                    backgroundColor: THEME.primary.cardBlue,
-                    borderColor: THEME.primary.borderGray,
-                    color: THEME.text.white,
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = THEME.primary.gold}
-                  onBlur={(e) => e.target.style.borderColor = THEME.primary.borderGray}
+                  className="w-full pl-12 bg-background border border-input text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none h-11 rounded-lg transition-colors"
                 />
               </div>
             </div>
@@ -239,26 +247,20 @@ export default function Index() {
             <div className="space-y-6">
               {groupedFAQ.map((section) => (
                 section.items.length > 0 && (
-                  <div key={section.category} className="border rounded-xl overflow-hidden transition-colors" style={{
-                    backgroundColor: THEME.primary.cardBlue,
-                    borderColor: THEME.primary.borderGray,
-                  }}>
-                    <div className="px-6 py-4 border-b" style={{
-                      backgroundColor: THEME.primary.lightBlue,
-                      borderColor: THEME.primary.borderGray,
-                    }}>
-                      <h3 className="text-lg font-semibold" style={{ color: THEME.primary.gold }}>
+                  <div key={section.category} className="border bg-card rounded-xl overflow-hidden hover:border-primary transition-colors">
+                    <div className="bg-muted px-6 py-4 border-b">
+                      <h3 className="text-lg font-semibold text-primary">
                         {section.category}
                       </h3>
                     </div>
                     <div className="px-6 py-4">
                       <Accordion type="single" collapsible className="w-full">
                         {section.items.map((item) => (
-                          <AccordionItem key={item.id} value={item.id} style={{ borderColor: THEME.primary.borderGray }}>
-                            <AccordionTrigger className="text-left hover:no-underline transition-colors py-3" style={{ color: THEME.text.white }}>
+                          <AccordionItem key={item.id} value={item.id} className="border-border">
+                            <AccordionTrigger className="text-left hover:no-underline hover:text-primary transition-colors py-3">
                               {item.question}
                             </AccordionTrigger>
-                            <AccordionContent className="pt-2 pb-4" style={{ color: THEME.text.primary }}>
+                            <AccordionContent className="text-muted-foreground pt-2 pb-4">
                               {item.answer}
                             </AccordionContent>
                           </AccordionItem>
@@ -270,47 +272,84 @@ export default function Index() {
               ))}
 
               {filteredFAQ.length === 0 && (
-                <div className="border rounded-xl p-8 text-center" style={{
-                  backgroundColor: THEME.primary.cardBlue,
-                  borderColor: THEME.primary.borderGray,
-                }}>
-                  <p style={{ color: THEME.text.primary }}>
-                    No results found for "<span style={{ color: THEME.primary.gold }}>{searchQuery}</span>". Try different keywords.
+                <div className="border bg-card rounded-xl p-8 text-center">
+                  <p className="text-muted-foreground">
+                    No results found for "<span className="text-primary">{searchQuery}</span>". Try different keywords.
                   </p>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="w-full py-20" style={{ backgroundColor: 'rgba(26, 34, 53, 0.5)', color: THEME.text.white }}>
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: THEME.primary.gold }}>
-              Ready to make your next deal safer?
-            </h2>
-            <p className="text-lg mb-8 max-w-xl mx-auto" style={{ color: THEME.text.primary }}>
-              Create your first gig transaction in minutes. No complexity, no hidden fees. Just secure, transparent escrow.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" className="text-base px-8 h-12" style={{ backgroundColor: THEME.primary.gold, color: THEME.primary.darkNavy }}>
-                <Link to="/signup">
-                  Get Started Now <ArrowRight className="h-4 w-4 ml-2" />
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t bg-card mt-20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <Link to="/" className="flex items-center gap-2.5 mb-4">
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-bold text-foreground">
+                  Gig<span className="text-primary">Hold</span>
+                </span>
+              </Link>
+              <p className="text-muted-foreground text-sm">
+                Secure escrow for every gig transaction.
+              </p>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Product</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <a href="#features" className="hover:text-primary transition-colors">Features</a>
+                <a href="#how-it-works" className="hover:text-primary transition-colors">How it Works</a>
+                <a href="#faq" className="hover:text-primary transition-colors">FAQ</a>
+                <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+              </div>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Company</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/contact" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Contact Us
                 </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border text-white" style={{ borderColor: THEME.primary.cardBlue, backgroundColor: THEME.primary.lightBlue }}>
-                <Link to="/login">
-                  Already have an account?
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Terms of Service
                 </Link>
-              </Button>
+                <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <Footer />
+          {/* Bottom Bar */}
+          <div className="border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
+            <Link 
+              to="/signup" 
+              className={navLinkStyle}
+            >
+              Get started
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
