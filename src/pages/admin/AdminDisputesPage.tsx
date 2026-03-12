@@ -13,8 +13,7 @@ import {
   CheckCircle, 
   XCircle, 
   DollarSign, 
-  ChevronDown,
-  Shield
+  ChevronDown
 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -51,7 +50,6 @@ export default function AdminDisputesPage() {
 
   const fetchDisputes = async () => {
     try {
-      // Fetch disputes
       const { data: disputesData, error: disputesError } = await supabase
         .from("disputes")
         .select("*")
@@ -60,17 +58,14 @@ export default function AdminDisputesPage() {
       if (disputesError) throw disputesError;
 
       if (disputesData && disputesData.length > 0) {
-        // Fetch related data for each dispute
         const withDetails = await Promise.all(
           disputesData.map(async (d) => {
-            // Fetch gig details
             const { data: gig } = await supabase
               .from("gigs")
               .select("*, client:profiles!gigs_client_id_fkey(*), hustler:profiles!gigs_hustler_id_fkey(*)")
               .eq("id", d.gig_id)
               .single();
 
-            // Fetch user who raised dispute
             const { data: raiser } = await supabase
               .from("profiles")
               .select("*")
@@ -100,7 +95,6 @@ export default function AdminDisputesPage() {
   useEffect(() => {
     fetchDisputes();
 
-    // Real-time subscription
     const channel = supabase
       .channel('admin-disputes-changes')
       .on(
@@ -123,7 +117,6 @@ export default function AdminDisputesPage() {
     setResolving(dispute.id);
     
     try {
-      // Update dispute
       const { error: disputeError } = await supabase
         .from("disputes")
         .update({
@@ -137,9 +130,7 @@ export default function AdminDisputesPage() {
 
       const gig = dispute.gig;
 
-      // Handle funds based on resolution
       if (resolution === "resolved_client") {
-        // Refund to client
         const { data: clientProfile, error: clientError } = await supabase
           .from("profiles")
           .select("balance")
@@ -167,7 +158,6 @@ export default function AdminDisputesPage() {
           .update({ status: "cancelled" })
           .eq("id", gig.id);
 
-        // Send notifications
         if (gig.client_id) {
           await supabase
             .from("notifications")
@@ -190,7 +180,6 @@ export default function AdminDisputesPage() {
 
         toast.success("Dispute resolved: Refunded to client");
       } else {
-        // Release to hustler
         if (gig.hustler_id) {
           const { data: hustlerProfile, error: hustlerError } = await supabase
             .from("profiles")
@@ -220,7 +209,6 @@ export default function AdminDisputesPage() {
             .update({ status: "completed" })
             .eq("id", gig.id);
 
-          // Send notifications
           if (gig.hustler_id) {
             await supabase
               .from("notifications")
@@ -256,7 +244,6 @@ export default function AdminDisputesPage() {
     }
   };
 
-  // Calculate stats
   const openDisputes = disputes.filter(d => d.status === 'open').length;
   const underReviewDisputes = disputes.filter(d => d.status === 'under_review').length;
   const resolvedDisputes = disputes.filter(d => d.status === 'resolved_client' || d.status === 'resolved_hustler').length;
@@ -275,16 +262,17 @@ export default function AdminDisputesPage() {
   };
 
   const getStatusColor = (status: string) => {
+    const baseClasses = "px-3 py-1 rounded-full text-xs font-semibold";
     switch(status) {
       case 'open':
-        return 'bg-red-500/20 text-red-400 border border-red-500/50';
+        return `${baseClasses} bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-200 dark:border-red-500/50`;
       case 'under_review':
-        return 'bg-amber-500/20 text-amber-400 border border-amber-500/50';
+        return `${baseClasses} bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/50`;
       case 'resolved_client':
       case 'resolved_hustler':
-        return 'bg-green-500/20 text-green-400 border border-green-500/50';
+        return `${baseClasses} bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 border border-green-200 dark:border-green-500/50`;
       default:
-        return 'bg-gray-500/20 text-gray-400 border border-gray-500/50';
+        return `${baseClasses} bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400 border border-gray-200 dark:border-gray-500/50`;
     }
   };
 
@@ -305,11 +293,10 @@ export default function AdminDisputesPage() {
     const created = new Date(dispute.created_at).getTime();
     const now = new Date().getTime();
     const diffHours = (now - created) / (1000 * 60 * 60);
-    const progress = Math.min(Math.round((diffHours / 48) * 100), 100); // 48 hour SLA
+    const progress = Math.min(Math.round((diffHours / 48) * 100), 100);
     return progress;
   };
 
-  // Status filters
   const statusFilters = [
     { value: 'all', label: 'All Statuses' },
     { value: 'open', label: 'Open' },
@@ -318,14 +305,14 @@ export default function AdminDisputesPage() {
     { value: 'resolved_hustler', label: 'Resolved (Hustler)' },
   ];
 
-  const primaryFilters = statusFilters.slice(0, 3); // 'all', 'open', 'under_review'
-  const secondaryFilters = statusFilters.slice(3); // 'resolved_client', 'resolved_hustler'
+  const primaryFilters = statusFilters.slice(0, 3);
+  const secondaryFilters = statusFilters.slice(3);
 
   if (loading && disputes.length === 0) {
     return (
       <AppLayout>
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F1D302]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       </AppLayout>
     );
@@ -337,42 +324,48 @@ export default function AdminDisputesPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Manage Disputes</h1>
-            <div className="h-1 w-24 bg-gradient-to-r from-[#F1D302] to-transparent rounded-full" />
+            <h1 className="text-4xl font-bold mb-2 text-foreground">
+              Manage Disputes
+            </h1>
+            <div className="h-1 w-24 bg-gradient-to-r from-primary to-transparent rounded-full" />
           </div>
-          <div className="card-3d px-6 py-3 flex items-center gap-6">
+          
+          {/* Stats Card - Using semantic tokens */}
+          <div className="px-6 py-3 rounded-xl flex items-center gap-6 bg-card border border-border shadow-lg">
             <div className="text-right">
-              <p className="text-xs text-gray-400">Open</p>
-              <p className="text-xl font-bold text-[#F1D302]">{openDisputes}</p>
+              <p className="text-xs text-muted-foreground">Open</p>
+              <p className="text-xl font-bold text-primary">{openDisputes}</p>
             </div>
-            <div className="w-px h-10 bg-white/10" />
+            <div className="w-px h-10 bg-border" />
             <div className="text-right">
-              <p className="text-xs text-gray-400">Under Review</p>
-              <p className="text-xl font-bold text-amber-400">{underReviewDisputes}</p>
+              <p className="text-xs text-muted-foreground">Under Review</p>
+              <p className="text-xl font-bold text-warning dark:text-warning-foreground">{underReviewDisputes}</p>
             </div>
-            <div className="w-px h-10 bg-white/10" />
+            <div className="w-px h-10 bg-border" />
             <div className="text-right">
-              <p className="text-xs text-gray-400">Resolved</p>
-              <p className="text-xl font-bold text-green-400">{resolvedDisputes}</p>
+              <p className="text-xs text-muted-foreground">Resolved</p>
+              <p className="text-xl font-bold text-success dark:text-success-foreground">{resolvedDisputes}</p>
             </div>
-            <div className="w-px h-10 bg-white/10" />
+            <div className="w-px h-10 bg-border" />
             <div className="text-right">
-              <p className="text-xs text-gray-400">Total Value</p>
-              <p className="text-xl font-bold text-white">{formatCurrency(totalAmount)}</p>
+              <p className="text-xs text-muted-foreground">Total Value</p>
+              <p className="text-xl font-bold text-foreground">
+                {formatCurrency(totalAmount)}
+              </p>
             </div>
           </div>
         </div>
 
         {disputes.length === 0 ? (
-          <div className="card-3d p-12 text-center">
-            <Scale className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400">No disputes found</p>
+          <div className="rounded-xl p-12 text-center bg-card border border-border shadow-lg">
+            <Scale className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
+            <p className="text-muted-foreground">No disputes found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Panel - Dispute List */}
             <div className="lg:col-span-1 space-y-4">
-              {/* Filter Chips with Dropdown */}
+              {/* Filter Chips */}
               <div className="flex flex-wrap items-center gap-2">
                 {primaryFilters.map((filter) => (
                   <button
@@ -383,8 +376,8 @@ export default function AdminDisputesPage() {
                     }}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       filterStatus === filter.value
-                        ? 'bg-gradient-to-r from-[#F1D302] to-[#FFE55C] text-[#003249]'
-                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 shadow-sm'
                     }`}
                   >
                     {filter.label}
@@ -397,8 +390,8 @@ export default function AdminDisputesPage() {
                       onClick={() => setShowAllStatuses(!showAllStatuses)}
                       className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1 ${
                         secondaryFilters.some(f => f.value === filterStatus)
-                          ? 'bg-gradient-to-r from-[#F1D302] to-[#FFE55C] text-[#003249]'
-                          : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                          ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
+                          : 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 shadow-sm'
                       }`}
                     >
                       {secondaryFilters.find(f => f.value === filterStatus)?.label || 'More'} 
@@ -412,7 +405,7 @@ export default function AdminDisputesPage() {
                           onClick={() => setShowAllStatuses(false)}
                         />
                         
-                        <div className="absolute top-full left-0 mt-2 z-20 card-3d p-2 min-w-[150px]">
+                        <div className="absolute top-full left-0 mt-2 z-20 min-w-[150px] rounded-xl p-2 bg-popover border border-border shadow-lg">
                           {secondaryFilters.map((filter) => (
                             <button
                               key={filter.value}
@@ -422,8 +415,8 @@ export default function AdminDisputesPage() {
                               }}
                               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                                 filterStatus === filter.value
-                                  ? 'bg-[#F1D302]/20 text-[#F1D302]'
-                                  : 'text-gray-400 hover:bg-white/5'
+                                  ? 'bg-primary/10 dark:bg-primary/20 text-primary-foreground dark:text-primary font-semibold'
+                                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                               }`}
                             >
                               {filter.label}
@@ -446,8 +439,10 @@ export default function AdminDisputesPage() {
                     <div
                       key={dispute.id}
                       onClick={() => setSelectedDispute(dispute.id)}
-                      className={`card-3d p-4 cursor-pointer transition-all hover:translate-x-1 ${
-                        selectedDispute === dispute.id ? 'border-[#F1D302]/50 shadow-[0_0_20px_rgba(241,211,2,0.3)]' : ''
+                      className={`rounded-xl p-4 cursor-pointer transition-all hover:translate-x-1 bg-card border border-border shadow-md hover:shadow-lg ${
+                        selectedDispute === dispute.id 
+                          ? 'border-primary dark:border-primary/50 shadow-[0_0_20px_rgba(var(--primary),0.2)] dark:shadow-[0_0_20px_rgba(var(--primary),0.3)]'
+                          : ''
                       }`}
                       style={{ animation: `slideIn 0.3s ease ${index * 0.05}s both` }}
                     >
@@ -456,27 +451,31 @@ export default function AdminDisputesPage() {
                         <div
                           className={`w-2 h-2 rounded-full ${
                             priority === 'high'
-                              ? 'bg-[#F1D302] animate-pulse'
+                              ? 'bg-primary animate-pulse'
                               : priority === 'medium'
-                              ? 'bg-[#508991]'
-                              : 'bg-gray-500'
+                              ? 'bg-secondary'
+                              : 'bg-muted-foreground/50'
                           }`}
                         />
-                        <span className="text-xs text-gray-400">{dispute.id.slice(0, 8)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {dispute.id.slice(0, 8)}
+                        </span>
                       </div>
 
                       <div className="mb-3">
-                        <p className="text-white font-semibold text-sm mb-1">{dispute.reason || 'No reason provided'}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="font-semibold text-sm mb-1 text-foreground">
+                          {dispute.reason || 'No reason provided'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
                           {dispute.raiser?.full_name || 'Unknown'} • {dispute.gig?.title || 'No gig'}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-[#F1D302] font-bold">
+                        <span className="text-primary font-bold">
                           {formatCurrency(dispute.gig?.budget || 0)}
                         </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(dispute.status)}`}>
+                        <span className={getStatusColor(dispute.status)}>
                           {getStatusLabel(dispute.status)}
                         </span>
                       </div>
@@ -484,15 +483,17 @@ export default function AdminDisputesPage() {
                       {/* SLA Timer */}
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-400">SLA Progress</span>
-                          <span className="text-xs text-white font-semibold">{slaProgress}%</span>
+                          <span className="text-xs text-muted-foreground">SLA Progress</span>
+                          <span className="text-xs font-semibold text-foreground">
+                            {slaProgress}%
+                          </span>
                         </div>
-                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="w-full h-2 rounded-full overflow-hidden bg-secondary">
                           <div 
                             className={`h-full rounded-full transition-all duration-1000 ${
                               slaProgress >= 75
-                                ? 'bg-gradient-to-r from-red-500 to-[#F1D302] animate-pulse'
-                                : 'bg-gradient-to-r from-[#508991] to-[#F1D302]'
+                                ? 'bg-gradient-to-r from-destructive to-primary animate-pulse'
+                                : 'bg-gradient-to-r from-secondary to-primary'
                             }`}
                             style={{ width: `${slaProgress}%` }}
                           />
@@ -502,7 +503,7 @@ export default function AdminDisputesPage() {
                       {/* Admin Notes Preview */}
                       {dispute.admin_notes && (
                         <div className="mt-3 text-xs">
-                          <span className="text-[#508991]">Note: {dispute.admin_notes.substring(0, 50)}...</span>
+                          <span className="text-secondary">Note: {dispute.admin_notes.substring(0, 50)}...</span>
                         </div>
                       )}
                     </div>
@@ -515,22 +516,24 @@ export default function AdminDisputesPage() {
             <div className="lg:col-span-2">
               {selectedDisputeData ? (
                 <div
-                  className="card-3d p-6 space-y-6"
+                  className="rounded-xl p-6 space-y-6 bg-card light:bg-white border border-border shadow-lg"
                   style={{ animation: 'fadeInUp 0.3s ease' }}
                 >
                   {/* Header */}
-                  <div className="flex items-start justify-between pb-6 border-b border-white/10">
+                  <div className="flex items-start justify-between pb-6 border-b border-border">
                     <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">
+                      <h3 className="text-2xl font-bold mb-2 text-foreground">
                         {selectedDisputeData.reason || 'Dispute'}
                       </h3>
-                      <p className="text-gray-400 text-sm">Dispute ID: {selectedDisputeData.id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Dispute ID: {selectedDisputeData.id}
+                      </p>
                     </div>
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center ${
                         getSlaProgress(selectedDisputeData) >= 75
-                          ? 'bg-red-500/20 text-red-400 animate-pulse'
-                          : 'bg-[#508991]/20 text-[#508991]'
+                          ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 animate-pulse'
+                          : 'bg-secondary/10 dark:bg-secondary/20 text-secondary'
                       }`}
                     >
                       <Clock className="w-6 h-6" />
@@ -539,42 +542,46 @@ export default function AdminDisputesPage() {
 
                   {/* Info Grid */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg bg-white/5">
-                      <p className="text-xs text-gray-400 mb-1">Raised By</p>
-                      <p className="text-white font-semibold">{selectedDisputeData.raiser?.full_name || 'Unknown'}</p>
+                    <div className="p-4 rounded-lg bg-secondary">
+                      <p className="text-xs mb-1 text-muted-foreground">Raised By</p>
+                      <p className="font-semibold text-foreground">
+                        {selectedDisputeData.raiser?.full_name || 'Unknown'}
+                      </p>
                     </div>
-                    <div className="p-4 rounded-lg bg-white/5">
-                      <p className="text-xs text-gray-400 mb-1">Status</p>
+                    <div className="p-4 rounded-lg bg-secondary">
+                      <p className="text-xs mb-1 text-muted-foreground">Status</p>
                       <p className={`font-semibold capitalize ${
-                        selectedDisputeData.status === 'open' ? 'text-red-400' :
-                        selectedDisputeData.status === 'under_review' ? 'text-amber-400' :
-                        'text-green-400'
+                        selectedDisputeData.status === 'open' 
+                          ? 'text-red-600 dark:text-red-400'
+                          : selectedDisputeData.status === 'under_review' 
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-green-600 dark:text-green-400'
                       }`}>
                         {getStatusLabel(selectedDisputeData.status)}
                       </p>
                     </div>
-                    <div className="p-4 rounded-lg bg-white/5">
-                      <p className="text-xs text-gray-400 mb-1">Amount</p>
-                      <p className="text-[#F1D302] font-bold text-lg">
+                    <div className="p-4 rounded-lg bg-secondary">
+                      <p className="text-xs mb-1 text-muted-foreground">Amount</p>
+                      <p className="text-primary font-bold text-lg">
                         {formatCurrency(selectedDisputeData.gig?.budget || 0)}
                       </p>
                     </div>
-                    <div className="p-4 rounded-lg bg-white/5">
-                      <p className="text-xs text-gray-400 mb-1">Created</p>
-                      <p className="text-white font-semibold">
+                    <div className="p-4 rounded-lg bg-secondary">
+                      <p className="text-xs mb-1 text-muted-foreground">Created</p>
+                      <p className="font-semibold text-foreground">
                         {new Date(selectedDisputeData.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  {/* Reason - This was the 'description' field */}
+                  {/* Reason */}
                   {selectedDisputeData.reason && (
-                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-lg border border-border bg-secondary">
                       <div className="flex items-center gap-2 mb-3">
-                        <AlertTriangle className="w-5 h-5 text-[#508991]" />
-                        <h4 className="text-white font-semibold">Reason</h4>
+                        <AlertTriangle className="w-5 h-5 text-secondary" />
+                        <h4 className="font-semibold text-foreground">Reason</h4>
                       </div>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-sm text-muted-foreground">
                         {selectedDisputeData.reason}
                       </p>
                     </div>
@@ -582,36 +589,42 @@ export default function AdminDisputesPage() {
 
                   {/* Gig Details */}
                   {selectedDisputeData.gig && (
-                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="p-4 rounded-lg border border-border bg-secondary">
                       <div className="flex items-center gap-2 mb-3">
-                        <DollarSign className="w-5 h-5 text-[#508991]" />
-                        <h4 className="text-white font-semibold">Gig Details</h4>
+                        <DollarSign className="w-5 h-5 text-secondary" />
+                        <h4 className="font-semibold text-foreground">Gig Details</h4>
                       </div>
-                      <p className="text-white text-sm mb-1">{selectedDisputeData.gig.title}</p>
+                      <p className="text-sm mb-1 text-foreground">
+                        {selectedDisputeData.gig.title}
+                      </p>
                       <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                         <div>
-                          <span className="text-gray-400">Client:</span>{' '}
-                          <span className="text-white">{selectedDisputeData.gig.client?.full_name || selectedDisputeData.gig.client_id}</span>
+                          <span className="text-muted-foreground">Client:</span>{' '}
+                          <span className="text-foreground">
+                            {selectedDisputeData.gig.client?.full_name || selectedDisputeData.gig.client_id}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-400">Hustler:</span>{' '}
-                          <span className="text-white">{selectedDisputeData.gig.hustler?.full_name || selectedDisputeData.gig.hustler_id || 'Not assigned'}</span>
+                          <span className="text-muted-foreground">Hustler:</span>{' '}
+                          <span className="text-foreground">
+                            {selectedDisputeData.gig.hustler?.full_name || selectedDisputeData.gig.hustler_id || 'Not assigned'}
+                          </span>
                         </div>
                       </div>
-                      <div className="mt-2 pt-2 border-t border-white/10">
-                        <span className="text-xs text-gray-400">Gig Status:</span>{' '}
-                        <span className="text-xs font-semibold text-[#508991]">
+                      <div className="mt-2 pt-2 border-t border-border">
+                        <span className="text-xs text-muted-foreground">Gig Status:</span>{' '}
+                        <span className="text-xs font-semibold text-secondary">
                           {selectedDisputeData.gig.status}
                         </span>
                       </div>
                     </div>
                   )}
 
-                  {/* Resolution Panel - Only show if not resolved */}
+                  {/* Resolution Panel */}
                   {selectedDisputeData.status !== 'resolved_client' && selectedDisputeData.status !== 'resolved_hustler' && (
-                    <div className="pt-6 border-t border-white/10">
-                      <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                        <Scale className="w-5 h-5 text-[#F1D302]" />
+                    <div className="pt-6 border-t border-border">
+                      <h4 className="font-semibold mb-4 flex items-center gap-2 text-foreground">
+                        <Scale className="w-5 h-5 text-primary" />
                         Resolution Decision
                       </h4>
                       <div className="space-y-4">
@@ -620,15 +633,19 @@ export default function AdminDisputesPage() {
                             onClick={() => setResolution('resolved_client')}
                             className={`flex-1 p-4 rounded-lg border transition-all ${
                               resolution === 'resolved_client'
-                                ? 'bg-gradient-to-br from-red-500/30 to-red-600/20 border-red-500'
-                                : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                ? 'bg-red-50 dark:bg-gradient-to-br dark:from-red-500/30 dark:to-red-600/20 border-red-300 dark:border-red-500'
+                                : 'bg-secondary border-border hover:bg-accent'
                             }`}
                           >
                             <XCircle className={`w-8 h-8 mx-auto mb-2 ${
-                              resolution === 'resolved_client' ? 'text-red-400' : 'text-gray-400'
+                              resolution === 'resolved_client' 
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-muted-foreground'
                             }`} />
                             <p className={`font-semibold text-sm ${
-                              resolution === 'resolved_client' ? 'text-white' : 'text-gray-400'
+                              resolution === 'resolved_client' 
+                                ? 'text-foreground'
+                                : 'text-muted-foreground'
                             }`}>Refund to Client</p>
                           </button>
 
@@ -636,15 +653,19 @@ export default function AdminDisputesPage() {
                             onClick={() => setResolution('resolved_hustler')}
                             className={`flex-1 p-4 rounded-lg border transition-all ${
                               resolution === 'resolved_hustler'
-                                ? 'bg-gradient-to-br from-green-500/30 to-green-600/20 border-green-500'
-                                : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                ? 'bg-green-50 dark:bg-gradient-to-br dark:from-green-500/30 dark:to-green-600/20 border-green-300 dark:border-green-500'
+                                : 'bg-secondary border-border hover:bg-accent'
                             }`}
                           >
                             <CheckCircle className={`w-8 h-8 mx-auto mb-2 ${
-                              resolution === 'resolved_hustler' ? 'text-green-400' : 'text-gray-400'
+                              resolution === 'resolved_hustler' 
+                                ? 'text-green-600 dark:text-green-400'
+                                : 'text-muted-foreground'
                             }`} />
                             <p className={`font-semibold text-sm ${
-                              resolution === 'resolved_hustler' ? 'text-white' : 'text-gray-400'
+                              resolution === 'resolved_hustler' 
+                                ? 'text-foreground'
+                                : 'text-muted-foreground'
                             }`}>Release to Hustler</p>
                           </button>
                         </div>
@@ -654,7 +675,7 @@ export default function AdminDisputesPage() {
                             placeholder="Add resolution notes..."
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-gray-500 resize-none focus:outline-none focus:border-[#F1D302]"
+                            className="w-full px-4 py-3 rounded-lg resize-none focus:outline-none focus:border-primary bg-background border-border text-foreground placeholder:text-muted-foreground"
                             rows={3}
                           />
                         </div>
@@ -662,7 +683,7 @@ export default function AdminDisputesPage() {
                         <Button
                           onClick={() => handleResolve(selectedDisputeData)}
                           disabled={resolving === selectedDisputeData.id}
-                          className="w-full bg-gradient-to-r from-[#F1D302] to-[#FFE55C] text-[#003249] font-semibold hover:opacity-90 transition-all"
+                          className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold hover:opacity-90 transition-all"
                         >
                           {resolving === selectedDisputeData.id ? (
                             <>
@@ -677,24 +698,24 @@ export default function AdminDisputesPage() {
                     </div>
                   )}
 
-                  {/* Resolution Info if resolved */}
+                  {/* Resolution Info */}
                   {(selectedDisputeData.status === 'resolved_client' || selectedDisputeData.status === 'resolved_hustler') && (
-                    <div className="pt-6 border-t border-white/10">
-                      <div className="p-4 rounded-lg bg-white/5 border border-green-500/30">
+                    <div className="pt-6 border-t border-border">
+                      <div className="p-4 rounded-lg border border-green-200 dark:border-green-500/30 bg-success/10 dark:bg-secondary">
                         <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                          <h4 className="text-white font-semibold">Resolution</h4>
+                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <h4 className="font-semibold text-foreground">Resolution</h4>
                         </div>
-                        <p className="text-[#F1D302] font-medium capitalize mb-1">
+                        <p className="text-primary font-medium capitalize mb-1">
                           {selectedDisputeData.status === 'resolved_client' ? 'Refunded to Client' : 'Released to Hustler'}
                         </p>
                         {selectedDisputeData.admin_notes && (
-                          <p className="text-sm text-gray-400 mt-2">
+                          <p className="text-sm mt-2 text-muted-foreground">
                             Notes: {selectedDisputeData.admin_notes}
                           </p>
                         )}
                         {selectedDisputeData.resolved_at && (
-                          <p className="text-xs text-gray-400 mt-2">
+                          <p className="text-xs mt-2 text-muted-foreground">
                             Resolved on: {new Date(selectedDisputeData.resolved_at).toLocaleDateString()}
                           </p>
                         )}
@@ -703,9 +724,9 @@ export default function AdminDisputesPage() {
                   )}
                 </div>
               ) : (
-                <div className="card-3d p-12 text-center">
-                  <Scale className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Select a dispute to view details</p>
+                <div className="rounded-xl p-12 text-center bg-card border border-border shadow-lg">
+                  <Scale className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
+                  <p className="text-muted-foreground">Select a dispute to view details</p>
                 </div>
               )}
             </div>
@@ -713,7 +734,6 @@ export default function AdminDisputesPage() {
         )}
       </div>
 
-      {/* Add these styles to your global CSS or in a style tag */}
       <style>{`
         @keyframes slideIn {
           from {
@@ -735,14 +755,6 @@ export default function AdminDisputesPage() {
             opacity: 1;
             transform: translateY(0);
           }
-        }
-
-        .card-3d {
-          background: rgba(26, 31, 46, 0.8);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(80, 137, 145, 0.2);
-          border-radius: 1rem;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
       `}</style>
     </AppLayout>
