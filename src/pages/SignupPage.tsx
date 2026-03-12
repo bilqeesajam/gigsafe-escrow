@@ -6,10 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { Shield } from "lucide-react";
+import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 import {
-  Shield
-} from "lucide-react";
+  isPasswordStrong,
+  validatePasswordStrength,
+} from "@/lib/password-utils";
+import {
+  isAccountLocked,
+  recordFailedAttempt,
+  clearLoginAttempts,
+  getLockoutTimeRemaining,
+  getRemainingAttempts,
+} from "@/lib/lockout-utils";
+import {
+  setRememberMe as saveRememberMeToken,
+  getRememberedEmail,
+  clearRememberMe,
+} from "@/lib/remember-me-utils";
 
 export default function SignupPage() {
   const [tab, setTab] = useState("signup");
@@ -18,36 +34,91 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [loginRememberMe, setLoginRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [accountLocked, setAccountLocked] = useState(false);
+  const [lockoutTimeRemaining, setLockoutTimeRemaining] = useState(0);
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+
+    // Validate password strength
+    if (!isPasswordStrong(password)) {
+      const strength = validatePasswordStrength(password);
+      toast.error(
+        `Password is too weak (${strength.label}). Please use a stronger password.`
+      );
       return;
     }
+
     setLoading(true);
     const { error } = await supabase.auth.signUp({
-      email, password,
+      email,
+      password,
       options: { emailRedirectTo: window.location.origin },
     });
     setLoading(false);
+
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Account created! Check your email to confirm, or continue to set up your profile.");
+      toast.success(
+        "Account created! Check your email to confirm, or continue to set up your profile."
+      );
       navigate("/choose-role");
     }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if account is locked
+    if (isAccountLocked(loginEmail)) {
+      const remaining = getLockoutTimeRemaining(loginEmail);
+      toast.error(
+        `Account locked due to too many failed login attempts. Try again in ${remaining} minutes.`
+      );
+      setAccountLocked(true);
+      setLockoutTimeRemaining(remaining);
+      return;
+    }
+
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    });
     setLoading(false);
+
     if (error) {
-      toast.error(error.message);
+      // Record failed attempt
+      const attempts = recordFailedAttempt(loginEmail);
+      const remaining = getRemainingAttempts(loginEmail);
+
+      if (attempts.attempts >= 5) {
+        setAccountLocked(true);
+        setLockoutTimeRemaining(getLockoutTimeRemaining(loginEmail));
+        toast.error(
+          "Account locked due to too many failed login attempts. Try again in 15 minutes."
+        );
+      } else if (remaining > 0) {
+        toast.error(
+          `${error.message}. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`
+        );
+      } else {
+        toast.error(error.message);
+      }
+    } else if (data.session) {
+      // Clear login attempts on successful login
+      clearLoginAttempts(loginEmail);
+
+      // Save Remember Me token if checked
+      if (loginRememberMe && data.session.access_token) {
+        saveRememberMeToken(loginEmail, data.session.access_token);
+      }
+
+      toast.success("Login successful!");
     }
   };
 
@@ -96,15 +167,66 @@ export default function SignupPage() {
               </TabsList>
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4 mt-4 text-[#66758a]">
+                  {accountLocked && (
+                    <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-md text-red-400 text-sm">
+                      Account locked. Try again in {lockoutTimeRemaining} minute
+                      {lockoutTimeRemaining !== 1 ? "s" : ""}.
+                    </div>
+                  )}
                   <div>
                     <Label htmlFor="login-email" className="text-white">Email</Label>
-                    <Input id="login-email" type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required disabled={loading} className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out" />
+                    <Input
+                      id="login-email"
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => {
+                        setLoginEmail(e.target.value);
+                        const locked = isAccountLocked(e.target.value);
+                        setAccountLocked(locked);
+                        if (locked) {
+                          setLockoutTimeRemaining(
+                            getLockoutTimeRemaining(e.target.value)
+                          );
+                        }
+                      }}
+                      required
+                      disabled={loading}
+                      className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out"
+                    />
                   </div>
                   <div>
                     <Label htmlFor="login-password" className="text-white">Password</Label>
-                    <Input id="login-password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required disabled={loading} className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out [color:white]" />
+                    <Input
+                      id="login-password"
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out [color:white]"
+                    />
                   </div>
-                  <Button type="submit" className="w-full bg-[#f5b800] text-black hover:bg-[#e0a500] transition-all duration-300 ease-out" disabled={loading}>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="remember-me"
+                      checked={loginRememberMe}
+                      onCheckedChange={(checked) =>
+                        setLoginRememberMe(checked as boolean)
+                      }
+                      className="border-[#66758a] bg-[#1a2a42]"
+                    />
+                    <Label
+                      htmlFor="remember-me"
+                      className="text-white cursor-pointer text-sm"
+                    >
+                      Remember me
+                    </Label>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#f5b800] text-black hover:bg-[#e0a500] transition-all duration-300 ease-out"
+                    disabled={loading || accountLocked}
+                  >
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </form>
@@ -119,11 +241,12 @@ export default function SignupPage() {
                     <Label htmlFor="signup-email" className="text-white">Email</Label>
                     <Input id="signup-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out" />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="signup-password" className="text-white">Create Password</Label>
-                    <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} disabled={loading} className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out [color:white]" />
+                    <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} className="bg-[#1a2a42] border-border/60 text-white focus:border-[#f5b800] transition-all duration-300 ease-out [color:white]" />
+                    <PasswordStrengthIndicator password={password} />
                   </div>
-                  <Button type="submit" className="w-full bg-[#f5b800] text-black hover:bg-[#e0a500] transition-all duration-300 ease-out" disabled={loading}>
+                  <Button type="submit" className="w-full bg-[#f5b800] text-black hover:bg-[#e0a500] transition-all duration-300 ease-out disabled:opacity-50" disabled={loading || (password && !isPasswordStrong(password))}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
