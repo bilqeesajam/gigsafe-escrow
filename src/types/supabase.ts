@@ -10,14 +10,14 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
       disputes: {
         Row: {
           admin_notes: string | null
-          created_at: string | null
+          created_at: string
           gig_id: string
           id: string
           raised_by: string
@@ -27,7 +27,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
-          created_at?: string | null
+          created_at?: string
           gig_id: string
           id?: string
           raised_by: string
@@ -37,7 +37,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
-          created_at?: string | null
+          created_at?: string
           gig_id?: string
           id?: string
           raised_by?: string
@@ -66,50 +66,50 @@ export type Database = {
         Row: {
           budget: number
           category: Database["public"]["Enums"]["gig_category"]
-          client_confirmed: boolean | null
+          client_confirmed: boolean
           client_id: string
           completion_pin: string | null
-          created_at: string | null
-          description: string
-          hustler_confirmed: boolean | null
+          created_at: string
+          description: string | null
+          hustler_confirmed: boolean
           hustler_id: string | null
           id: string
-          location: string
+          location: string | null
           status: Database["public"]["Enums"]["gig_status"]
           title: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           budget: number
           category?: Database["public"]["Enums"]["gig_category"]
-          client_confirmed?: boolean | null
+          client_confirmed?: boolean
           client_id: string
           completion_pin?: string | null
-          created_at?: string | null
-          description: string
-          hustler_confirmed?: boolean | null
+          created_at?: string
+          description?: string | null
+          hustler_confirmed?: boolean
           hustler_id?: string | null
           id?: string
-          location: string
+          location?: string | null
           status?: Database["public"]["Enums"]["gig_status"]
           title: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           budget?: number
           category?: Database["public"]["Enums"]["gig_category"]
-          client_confirmed?: boolean | null
+          client_confirmed?: boolean
           client_id?: string
           completion_pin?: string | null
-          created_at?: string | null
-          description?: string
-          hustler_confirmed?: boolean | null
+          created_at?: string
+          description?: string | null
+          hustler_confirmed?: boolean
           hustler_id?: string | null
           id?: string
-          location?: string
+          location?: string | null
           status?: Database["public"]["Enums"]["gig_status"]
           title?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -130,26 +130,26 @@ export type Database = {
       }
       notifications: {
         Row: {
-          created_at: string | null
+          created_at: string
           gig_id: string | null
           id: string
-          is_read: boolean | null
+          is_read: boolean
           message: string
           user_id: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           gig_id?: string | null
           id?: string
-          is_read?: boolean | null
+          is_read?: boolean
           message: string
           user_id: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           gig_id?: string | null
           id?: string
-          is_read?: boolean | null
+          is_read?: boolean
           message?: string
           user_id?: string
         }
@@ -172,70 +172,81 @@ export type Database = {
       }
       profiles: {
         Row: {
-          balance: number | null
-          created_at: string | null
+          avatar_url: string | null
+          balance: number
+          created_at: string
           full_name: string | null
           id: string
           id_number: string | null
-          kyc_status: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_status: Database["public"]["Enums"]["kyc_status"]
           phone: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
-          avatar_url: string | null
-          updated_at: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
         }
         Insert: {
-          balance?: number | null
-          created_at?: string | null
+          avatar_url?: string | null
+          balance?: number
+          created_at?: string
           full_name?: string | null
           id: string
           id_number?: string | null
-          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
           phone?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-          avatar_url?: string | null
-          updated_at?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
         }
         Update: {
-          balance?: number | null
-          created_at?: string | null
+          avatar_url?: string | null
+          balance?: number
+          created_at?: string
           full_name?: string | null
           id?: string
           id_number?: string | null
-          kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
           phone?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-          avatar_url?: string | null
-          updated_at?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
           amount: number
-          created_at: string | null
+          created_at: string
           from_user_id: string | null
           gig_id: string | null
           id: string
+          note: string | null
           to_user_id: string | null
-          type: Database["public"]["Enums"]["txn_type"]
+          type: Database["public"]["Enums"]["transaction_type"]
         }
         Insert: {
           amount: number
-          created_at?: string | null
+          created_at?: string
           from_user_id?: string | null
           gig_id?: string | null
           id?: string
+          note?: string | null
           to_user_id?: string | null
-          type: Database["public"]["Enums"]["txn_type"]
+          type: Database["public"]["Enums"]["transaction_type"]
         }
         Update: {
           amount?: number
-          created_at?: string | null
+          created_at?: string
           from_user_id?: string | null
           gig_id?: string | null
           id?: string
+          note?: string | null
           to_user_id?: string | null
-          type?: Database["public"]["Enums"]["txn_type"]
+          type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [
           {
@@ -261,21 +272,36 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
+      users: {
         Row: {
+          created_at: string
+          email: string
           id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
+          is_verified: boolean
+          password_hash: string
+          updated_at: string
+          verification_expires: string | null
+          verification_token: string | null
         }
         Insert: {
+          created_at?: string
+          email: string
           id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
+          is_verified?: boolean
+          password_hash: string
+          updated_at?: string
+          verification_expires?: string | null
+          verification_token?: string | null
         }
         Update: {
+          created_at?: string
+          email?: string
           id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
+          is_verified?: boolean
+          password_hash?: string
+          updated_at?: string
+          verification_expires?: string | null
+          verification_token?: string | null
         }
         Relationships: []
       }
@@ -284,24 +310,49 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_kyc_status: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["kyc_status"]
-      }
-      has_role: {
+      create_user_profile: {
         Args: {
-          _role: Database["public"]["Enums"]["user_role"]
-          _user_id: string
+          user_full_name: string
+          user_id: string
+          user_id_number: string
+          user_phone: string
+          user_role: Database["public"]["Enums"]["user_role"]
         }
-        Returns: boolean
+        Returns: {
+          avatar_url: string | null
+          balance: number
+          created_at: string
+          full_name: string | null
+          id: string
+          id_number: string | null
+          kyc_status: Database["public"]["Enums"]["kyc_status"]
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
-      is_gig_participant: {
-        Args: { _gig_id: string; _user_id: string }
-        Returns: boolean
+      get_my_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_user_by_email: {
+        Args: { user_email: string }
+        Returns: {
+          email: string
+          id: string
+          is_verified: boolean
+          password_hash: string
+        }[]
+      }
+      verify_user_email: { Args: { token: string }; Returns: boolean }
     }
     Enums: {
-      user_role: "client" | "hustler" | "admin"
       dispute_status:
         | "open"
         | "under_review"
@@ -317,7 +368,8 @@ export type Database = {
         | "disputed"
         | "cancelled"
       kyc_status: "pending" | "approved" | "rejected"
-      txn_type: "hold" | "release" | "refund" | "top_up"
+      transaction_type: "hold" | "release" | "refund" | "top_up"
+      user_role: "client" | "hustler" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -445,7 +497,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["client", "hustler", "admin"],  // ✅ was app_role
       dispute_status: [
         "open",
         "under_review",
@@ -463,7 +514,8 @@ export const Constants = {
         "cancelled",
       ],
       kyc_status: ["pending", "approved", "rejected"],
-      txn_type: ["hold", "release", "refund", "top_up"],
+      transaction_type: ["hold", "release", "refund", "top_up"],
+      user_role: ["client", "hustler", "admin"],
     },
   },
 } as const
