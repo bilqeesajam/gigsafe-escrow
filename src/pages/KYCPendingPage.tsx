@@ -1,4 +1,5 @@
 import { Shield, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 
 export default function KYCPendingPage() {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
