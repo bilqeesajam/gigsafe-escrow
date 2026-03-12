@@ -1,4 +1,4 @@
-import { Shield, Clock } from "lucide-react";
+import { Shield, Clock, Link } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,9 @@ export default function KYCPendingPage() {
               ? "Your identity verification was rejected. Please contact support."
               : "Your identity verification is being reviewed. You'll be notified once approved."}
           </p>
-          <Button variant="outline" onClick={signOut} className="mt-4">Sign Out</Button>
+          <Link to="/login" className="block">
+            <Button variant="outline" className="mt-4">Sign Out</Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

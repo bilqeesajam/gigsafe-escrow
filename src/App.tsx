@@ -44,7 +44,7 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/choose-role" element={<ChooseRolePage />} />
+            {/* <Route path="/choose-role" element={<ChooseRolePage />} /> */}
             <Route path="/kyc" element={<KYCPage />} />
             <Route path="/kyc-pending" element={<KYCPendingPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
