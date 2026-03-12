@@ -1,175 +1,108 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/integrations/supabase/client' 
-import bcrypt from 'bcryptjs'
+import { supabase } from '@/integrations/supabase/client'
+import { Session, User } from '@supabase/supabase-js'
+import { Database } from '@/types/supabase'
 
-interface User {
-  id: string
-  email: string
-  is_verified: boolean
-}
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface AuthContextType {
   user: User | null
+  session: Session | null
+  profile: Profile | null        // ← added
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: any }>
-  signIn: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
-  verifyEmail: (token: string) => Promise<{ error: any }>
+  verifyEmail: (token: string, email: string) => Promise<{ error: Error | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Fetch profile whenever user changes
   useEffect(() => {
-    // Check for stored session
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    if (!user) {
+      setProfile(null)
+      return
     }
-    setLoading(false)
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => setProfile(data ?? null))
+  }, [user])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      }
+    )
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): Promise<{ error: Error | null }> => {
     try {
-      // Hash password
-      const salt = await bcrypt.genSalt(10)
-      const password_hash = await bcrypt.hash(password, salt)
-
-      // Generate verification token
-      const verification_token = Math.random().toString(36).substring(2, 15) + 
-                                Math.random().toString(36).substring(2, 15)
-      const verification_expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-
-      // Insert user into custom users table
-      const { data, error } = await supabase
-        .from('users')
-        .insert([
-          {
-            email,
-            password_hash,
-            verification_token,
-            verification_expires,
-            is_verified: false
-          }
-        ])
-        .select()
-        .single()
-
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/login` },
+      })
       if (error) throw error
-
-      // Send verification email (you'll need to implement this)
-      await sendVerificationEmail(email, verification_token)
-
       return { error: null }
     } catch (error) {
-      return { error }
+      return { error: error as Error }
     }
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
     try {
-      // Get user from database
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .single()
-
-      if (error || !user) {
-        throw new Error('Invalid email or password')
-      }
-
-      // Check if verified
-      if (!user.is_verified) {
-        throw new Error('Please verify your email first')
-      }
-
-      // Verify password
-      const validPassword = await bcrypt.compare(password, user.password_hash)
-      if (!validPassword) {
-        throw new Error('Invalid email or password')
-      }
-
-      // Remove sensitive data
-      const { password_hash, verification_token, verification_expires, ...userWithoutSensitive } = user
-      
-      // Store in localStorage
-      localStorage.setItem('user', JSON.stringify(userWithoutSensitive))
-      setUser(userWithoutSensitive)
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
       return { error: null }
     } catch (error) {
-      return { error }
-    }
-  }
-
-  const verifyEmail = async (token: string) => {
-    try {
-      // Find user with this token
-      const { data: user, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('verification_token', token)
-        .single()
-
-      if (fetchError || !user) {
-        throw new Error('Invalid verification token')
-      }
-
-      // Check if token expired
-      if (new Date(user.verification_expires) < new Date()) {
-        throw new Error('Verification token expired')
-      }
-
-      // Update user as verified
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ 
-          is_verified: true, 
-          verification_token: null,
-          verification_expires: null 
-        })
-        .eq('id', user.id)
-
-      if (updateError) throw updateError
-
-      return { error: null }
-    } catch (error) {
-      return { error }
+      return { error: error as Error }
     }
   }
 
   const signOut = async () => {
-    localStorage.removeItem('user')
-    setUser(null)
+    await supabase.auth.signOut()
+    setProfile(null)
   }
 
-  // Helper function to send verification email
-  const sendVerificationEmail = async (email: string, token: string) => {
-    // You'll need to implement this using an email service
-    // For now, just log it
-    console.log(`Verification link: ${window.location.origin}/verify-email?token=${token}`)
-    
-    // You can use services like:
-    // - Resend
-    // - SendGrid
-    // - AWS SES
-    // - or Supabase's built-in email (if you enable it)
+  const verifyEmail = async (token: string, email: string): Promise<{ error: Error | null }> => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' })
+      if (error) throw error
+      return { error: null }
+    } catch (error) {
+      return { error: error as Error }
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, verifyEmail }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut, verifyEmail }}>
       {children}
     </AuthContext.Provider>
   )
