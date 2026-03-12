@@ -15,16 +15,25 @@ import {
   Banknote,
   User,
   LogOut,
-  Menu,
-  X,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { useState, useMemo } from "react";
 
 export default function Index() {
+  const navLinkStyle = "relative hover:text-primary transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full";
+
   const { user, signOut } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const ThemeToggle = () => (
+    <Button variant="ghost" size="icon" onClick={toggleTheme}>
+      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
 
   const faqData = [
     { id: 'gs-1', category: 'Getting Started', question: "What is 'name'?", answer: "Your name is a unique identifier used to represent you on the platform. It helps other users identify you when working together on gigs." },
@@ -72,32 +81,36 @@ export default function Index() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0f1a2b] to-[#1a2235]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f1a2b] border-b border-[#232c40]">
+    <div className="min-h-screen bg-background">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
+          {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent border border-[#f5b800]">
-              <Shield className="h-5 w-5 text-[#f5b800]" />
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+              <Shield className="h-5 w-5 text-primary" />
             </div>
-            <span className="text-lg font-bold text-white tracking-tight">GigHold</span>
+            <span className="text-lg font-bold text-foreground tracking-tight">
+              Gig<span className="text-primary">Hold</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#c0c0c0]">
-            <Link to="/" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+            <a href="#how-it-works" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
               How it works
-            </Link>
-            <a href="#features" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
+            </a>
+            <a href="#features" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
               Features
             </a>
-            <a href="#faq" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">
+            <a href="#faq" className="relative hover:text-primary transition-colors before:absolute before:bottom-[-4px] before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full">
               FAQ
             </a>
           </nav>
 
-          {/* Auth Section */}
+          {/* Auth & Theme Section */}
           <div className="flex items-center gap-2">
+            <ThemeToggle />
+            
             {user ? (
               <>
                 <Button asChild size="sm" className="hidden sm:inline-flex">
@@ -107,10 +120,10 @@ export default function Index() {
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="text-[#c0c0c0] hover:text-white hover:bg-[#232c40]">
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
                   <Link to="/login">Sign In</Link>
                 </Button>
-                <Button size="sm" className="bg-[#f5b800] text-[#0f1a2b] hover:bg-yellow-400">
+                <Button size="sm" asChild>
                   <Link to="/signup">Get Started</Link>
                 </Button>
               </>
@@ -119,111 +132,51 @@ export default function Index() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="w-full py-20 md:py-32 text-white">
-        <div className="container mx-auto px-4 text-center max-w-3xl">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            The Service Marketplace<br />
-            <span className="text-[#f5b800]">With Built-In Escrow</span>
-          </h1>
-          <p className="text-lg md:text-xl text-[#c0c0c0] mb-8 max-w-2xl mx-auto leading-relaxed">
-            Post tasks, hire trusted hustlers, and pay securely. Funds are held until the job is verified complete — protecting both parties.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 h-12 bg-[#f5b800] hover:bg-yellow-400 text-[#0f1a2b]">
-              <Link to="/signup">
-                Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border-[#232c40] bg-[#1a2235] text-white hover:bg-[#232c40]">
-              <Link to="/login">
-                Sign In
-              </Link>
-            </Button>
-          </div>
-          {/* <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
-            <div>
-              <p className="text-2xl font-bold text-[#f5b800]">256-bit</p>
-              <p className="text-sm text-[#c0c0c0] mt-1">Encryption</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#f5b800]">100%</p>
-              <p className="text-sm text-[#c0c0c0] mt-1">Transparent</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#f5b800]">24/7</p>
-              <p className="text-sm text-[#c0c0c0] mt-1">Support</p>
-            </div>
-          </div> */}
-        </div>
-      </section>
+      <main>
 
-      {/* Features Section */}
-      <section id="features" className="w-full bg-[#1a2235]/50 text-white py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#f5b800] mb-4">Why choose GigHold?</h2>
-            <p className="text-[#c0c0c0] max-w-2xl mx-auto">
-              Every feature is designed to protect both parties and keep deals moving forward.
-            </p>
+        <section className="container py-20 md:py-32 text-center max-w-3xl mx-auto animate-fade-in">
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+            The Service Marketplace<br />
+            <span className="text-primary">With Built-In Escrow</span>
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+            Post tasks, hire hustlers, and pay securely. Funds are held until the job is verified complete — protecting both parties.
+          </p>
+          <div className="flex justify-center gap-3">
+            <Button size="lg" asChild>
+              <Link to="/signup">Start for Free <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/login">Sign In</Link>
+            </Button>
           </div>
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        </section>
+
+        <section id="features" className="container pb-20">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              {
-                title: "Escrow Protection",
-                description: "Funds are held securely until the job is verified complete.",
-                Icon: Lock,
-              },
-              {
-                title: "Fast Matching",
-                description: "Post a task and get matched with hustlers in your area instantly.",
-                Icon: Zap,
-              },
-              {
-                title: "Verified Users",
-                description: "All users go through KYC verification before accessing the platform.",
-                Icon: CheckCircle,
-              },
-              {
-                title: "Transparent Tracking",
-                description: "Real-time updates for complete visibility at every stage.",
-                Icon: MapPin,
-              },
-              {
-                title: "Dispute Resolution",
-                description: "Neutral third-parties to help reach fair resolutions.",
-                Icon: Shield,
-              },
-              {
-                title: "PIN Security",
-                description: "Additional layer of security with PIN verification on release.",
-                Icon: Lock,
-              },
-            ].map(({ Icon, title, description }) => (
-              <div
-                key={title}
-                className="bg-[#232c40] border border-[#3a4456] rounded-xl p-6 hover:border-[#f5b800] transition-colors group"
-              >
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-[#3a4456] mb-4 group-hover:bg-[#f5b800]/20 transition-colors border border-[#4a5466] group-hover:border-[#f5b800]">
-                  <Icon className="h-6 w-6 text-[#f5b800] group-hover:text-yellow-300" />
+              { icon: Lock, title: "Escrow Protection", desc: "Funds are held securely until the job is verified complete with a PIN." },
+              { icon: Zap, title: "Fast Matching", desc: "Post a task and get matched with hustlers in your area instantly." },
+              { icon: Shield, title: "Verified Users", desc: "All users go through KYC verification before accessing the platform." },
+            ].map((f) => (
+              <div key={f.title} className="rounded-xl border bg-card p-6 text-center space-y-3">
+                <div className="mx-auto rounded-full bg-primary/10 p-3 w-fit">
+                  <f.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{description}</p>
+                <h3 className="font-semibold">{f.title}</h3>
+                <p className="text-sm text-muted-foreground">{f.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="w-full bg-[#0f1a2b] text-white py-20">
-        <div className="container mx-auto px-4">
+        <section id="how-it-works" className="container py-20">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#f5b800] mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-4">
                 How it works
               </h2>
-              <p className="text-[#c0c0c0] max-w-lg mx-auto">
+              <p className="text-muted-foreground max-w-lg mx-auto">
                 Simple steps from agreement to payment. Both sides stay informed at every stage.
               </p>
             </div>
@@ -256,39 +209,36 @@ export default function Index() {
                   Icon: Banknote,
                 },
               ].map(({ Icon, title, description }, idx) => (
-                <div key={title} className="bg-[#232c40] border border-[#3a4456] rounded-xl p-6 hover:border-[#f5b800] transition-colors relative">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-[#f5b800]/20 mb-4 border border-[#f5b800]/30">
-                    <Icon className="h-6 w-6 text-[#f5b800]" />
+                <div key={title} className="rounded-xl border bg-card p-6 hover:border-primary transition-colors">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-primary/10 mb-4">
+                    <Icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
-                  <p className="text-sm text-[#c0c0c0] leading-relaxed">{description}</p>
+                  <h3 className="text-lg font-semibold mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="w-full bg-[#1a2235]/50 text-white py-20">
-        <div className="container mx-auto px-4">
+        <section id="faq" className="container py-20">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#f5b800] mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-4">
                 Frequently Asked Questions
               </h2>
-              <p className="text-[#c0c0c0] max-w-lg mx-auto mb-8">
+              <p className="text-muted-foreground max-w-lg mx-auto mb-8">
                 Find answers to common questions about GigHold
               </p>
               {/* Search Box */}
               <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-4 top-3.5 h-5 w-5 text-[#c0c0c0]" />
+                <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search common questions here"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 bg-[#232c40] border border-[#3a4456] text-white placeholder:text-[#8b95ac] focus:border-[#f5b800] focus:outline-none h-11 rounded-lg transition-colors"
+                  className="w-full pl-12 bg-background border border-input text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none h-11 rounded-lg transition-colors"
                 />
               </div>
             </div>
@@ -297,20 +247,20 @@ export default function Index() {
             <div className="space-y-6">
               {groupedFAQ.map((section) => (
                 section.items.length > 0 && (
-                  <div key={section.category} className="bg-[#232c40] border border-[#3a4456] rounded-xl overflow-hidden hover:border-[#f5b800]/50 transition-colors">
-                    <div className="bg-[#1a2235] px-6 py-4 border-b border-[#3a4456]">
-                      <h3 className="text-lg font-semibold text-[#f5b800]">
+                  <div key={section.category} className="border bg-card rounded-xl overflow-hidden hover:border-primary transition-colors">
+                    <div className="bg-muted px-6 py-4 border-b">
+                      <h3 className="text-lg font-semibold text-primary">
                         {section.category}
                       </h3>
                     </div>
                     <div className="px-6 py-4">
                       <Accordion type="single" collapsible className="w-full">
                         {section.items.map((item) => (
-                          <AccordionItem key={item.id} value={item.id} className="border-[#3a4456]">
-                            <AccordionTrigger className="text-left hover:no-underline text-white hover:text-[#f5b800] transition-colors py-3">
+                          <AccordionItem key={item.id} value={item.id} className="border-border">
+                            <AccordionTrigger className="text-left hover:no-underline hover:text-primary transition-colors py-3">
                               {item.question}
                             </AccordionTrigger>
-                            <AccordionContent className="text-[#c0c0c0] pt-2 pb-4">
+                            <AccordionContent className="text-muted-foreground pt-2 pb-4">
                               {item.answer}
                             </AccordionContent>
                           </AccordionItem>
@@ -322,91 +272,81 @@ export default function Index() {
               ))}
 
               {filteredFAQ.length === 0 && (
-                <div className="bg-[#232c40] border border-[#3a4456] rounded-xl p-8 text-center">
-                  <p className="text-[#c0c0c0]">
-                    No results found for "<span className="text-[#f5b800]">{searchQuery}</span>". Try different keywords.
+                <div className="border bg-card rounded-xl p-8 text-center">
+                  <p className="text-muted-foreground">
+                    No results found for "<span className="text-primary">{searchQuery}</span>". Try different keywords.
                   </p>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="w-full bg-[#1a2235]/50 text-white py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-[#f5b800]">
-              Ready to make your next deal safer?
-            </h2>
-            <p className="text-lg mb-8 max-w-xl mx-auto text-[#c0c0c0]">
-              Create your first gig transaction in minutes. No complexity, no hidden fees. Just secure, transparent escrow.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" className="text-base px-8 h-12 bg-[#f5b800] hover:bg-yellow-400 text-[#0f1a2b]">
-                <Link to="/signup">
-                  Get Started Now <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="text-base px-8 h-12 border-[#232c40] bg-[#1a2235] text-white hover:bg-[#232c40]">
-                <Link to="/login">
-                  Already have an account?
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#232c40] bg-[#0f1a2b]">
+      <footer className="border-t bg-card mt-20">
         <div className="container mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div>
               <Link to="/" className="flex items-center gap-2.5 mb-4">
-                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent border border-[#f5b800]">
-                  <Shield className="h-4 w-4 text-[#f5b800]" />
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                  <Shield className="h-4 w-4 text-primary" />
                 </div>
-                <span className="font-bold text-white">GigHold</span>
+                <span className="font-bold text-foreground">
+                  Gig<span className="text-primary">Hold</span>
+                </span>
               </Link>
-              <p className="text-[#c0c0c0] text-sm">Secure escrow for every gig transaction.</p>
+              <p className="text-muted-foreground text-sm">
+                Secure escrow for every gig transaction.
+              </p>
             </div>
 
             {/* Product */}
             <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <div className="space-y-3 text-sm text-[#c0c0c0]">
-                <a href="#features" className="hover:text-[#f5b800] transition-colors">Features</a>
-                <a href="#how-it-works" className="block hover:text-[#f5b800] transition-colors">How it Works</a>
-                <a href="#faq" className="block hover:text-[#f5b800] transition-colors">FAQ</a>
-                <Link to="/pricing" className="block hover:text-[#f5b800] transition-colors">Pricing</Link>
+              <h4 className="font-semibold text-foreground mb-4">Product</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <a href="#features" className="hover:text-primary transition-colors">Features</a>
+                <a href="#how-it-works" className="hover:text-primary transition-colors">How it Works</a>
+                <a href="#faq" className="hover:text-primary transition-colors">FAQ</a>
+                <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
               </div>
             </div>
 
             {/* Company */}
             <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <div className="space-y-3 text-sm text-[#c0c0c0]">
-                <Link to="/contact" onClick={() => window.scrollTo(0, 0)} className="block hover:text-[#f5b800] transition-colors">Contact Us</Link>
+              <h4 className="font-semibold text-foreground mb-4">Company</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/contact" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
               </div>
             </div>
 
             {/* Legal */}
             <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <div className="space-y-3 text-sm text-[#c0c0c0]">
-                <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="block hover:text-[#f5b800] transition-colors">Terms of Service</Link>
-                <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="block hover:text-[#f5b800] transition-colors">Privacy Policy</Link>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <div className="flex flex-col space-y-3 text-sm text-muted-foreground">
+                <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Terms of Service
+                </Link>
+                <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
               </div>
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-[#232c40] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#c0c0c0]">
+          <div className="border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
             <span>© {new Date().getFullYear()} GigHold. All rights reserved.</span>
-            <Link to="/signup" className="relative hover:text-white transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-[#f5b800] before:transition-[width] before:duration-300 hover:before:w-full">Get started</Link>
+            <Link 
+              to="/signup" 
+              className={navLinkStyle}
+            >
+              Get started
+            </Link>
           </div>
         </div>
       </footer>
