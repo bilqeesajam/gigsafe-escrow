@@ -24,6 +24,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useState } from "react";
 import { toast } from "sonner";
+import { THEME } from "@/lib/theme";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: "", phone: "", email: "", message: "" });

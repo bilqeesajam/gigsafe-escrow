@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { THEME } from "@/lib/theme";
 
 export default function PricingPage() {
   const pricingTiers = [
@@ -60,7 +61,7 @@ export default function PricingPage() {
         </DropdownMenuContent>
       </DropdownMenu>
     );
-
+const navLinkStyle = "relative hover:text-primary transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:w-0 before:bg-primary before:transition-[width] before:duration-300 hover:before:w-full";
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
