@@ -142,7 +142,7 @@ export default function ProfilePage() {
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Hero profile header */}
-        <Card className="overflow-hidden">
+        {/* <Card className="overflow-hidden"> */}
           <div className="h-32 rounded-t-lg" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.85) 0%, hsl(var(--primary) / 0.4) 40%, hsl(var(--accent) / 0.5) 70%, hsl(var(--accent) / 0.15) 100%)' }} />
           <div className="px-6 pb-6 -mt-14">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
@@ -161,7 +161,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-        </Card>
+        {/* </Card> */}
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -218,7 +218,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Settings */}
-        <Card>
+        {/* <Card> */}
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <ShieldCheck className="h-5 w-5 text-primary" />
@@ -272,7 +272,7 @@ export default function ProfilePage() {
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </CardContent>
-        </Card>
+        {/* </Card> */}
       </div>
     </AppLayout>
   );

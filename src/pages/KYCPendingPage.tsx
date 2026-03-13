@@ -1,4 +1,5 @@
-import { Shield, Clock } from "lucide-react";
+import { Shield, Clock, Link } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 export default function KYCPendingPage() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (profile?.kyc_status === "approved") {
+      navigate("/dashboard");
+    }
+  }, [profile, navigate]);
 
   const handleSignOut = async () => {
     await signOut();

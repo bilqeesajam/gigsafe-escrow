@@ -21,9 +21,6 @@ export function ProtectedRoute({ children, requireKyc = true, requireRole }: Pro
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // No profile yet — need to choose role
-  if (!profile?.role) return <Navigate to="/choose-role" replace />;
-
   // KYC not submitted yet
   if (requireKyc && !profile.kyc_status) return <Navigate to="/kyc" replace />;
 
