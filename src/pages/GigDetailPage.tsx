@@ -47,6 +47,9 @@ export default function GigDetailPage() {
 
   const isClient = user?.id === gig.client_id;
   const isHustler = user?.id === gig.hustler_id;
+  const pricingSubtotal = (gig as any).pricing_subtotal ?? gig.budget;
+  const pricingFee = (gig as any).pricing_fee ?? 0;
+  const pricingTotal = (gig as any).pricing_total ?? gig.budget;
 
   // Client: Confirm & release PIN
   const handleConfirmRelease = async () => {
@@ -106,9 +109,18 @@ export default function GigDetailPage() {
     // Credit hustler
     if (gig.hustler_id) {
       const { data: hProfile } = await supabase.from("profiles").select("balance").eq("id", gig.hustler_id).single();
-      await supabase.from("profiles").update({ balance: (hProfile?.balance || 0) + gig.budget }).eq("id", gig.hustler_id);
-      await supabase.from("transactions").insert({ gig_id: gig.id, to_user_id: gig.hustler_id, from_user_id: gig.client_id, amount: gig.budget, type: "release" as const });
-      await supabase.from("notifications").insert({ user_id: gig.hustler_id, message: `R${gig.budget.toFixed(2)} released for "${gig.title}".`, gig_id: gig.id });
+      await supabase.from("profiles").update({ balance: (hProfile?.balance || 0) + pricingSubtotal }).eq("id", gig.hustler_id);
+      await supabase.from("transactions").insert({
+        gig_id: gig.id,
+        to_user_id: gig.hustler_id,
+        from_user_id: gig.client_id,
+        amount: pricingSubtotal,
+        subtotal_amount: pricingSubtotal,
+        fee_amount: pricingFee,
+        total_amount: pricingTotal,
+        type: "release" as const,
+      });
+      await supabase.from("notifications").insert({ user_id: gig.hustler_id, message: `R${pricingSubtotal.toFixed(2)} released for "${gig.title}".`, gig_id: gig.id });
       await supabase.from("notifications").insert({ user_id: gig.client_id, message: `"${gig.title}" completed. Funds released.`, gig_id: gig.id });
     }
     await refreshProfile();
@@ -141,7 +153,15 @@ export default function GigDetailPage() {
       await supabase.from("gigs").update({ status: "cancelled" as any }).eq("id", gig.id);
       const { data: cProfile } = await supabase.from("profiles").select("balance").eq("id", gig.client_id).single();
       await supabase.from("profiles").update({ balance: (cProfile?.balance || 0) + gig.budget }).eq("id", gig.client_id);
-      await supabase.from("transactions").insert({ gig_id: gig.id, to_user_id: gig.client_id, amount: gig.budget, type: "refund" as const });
+      await supabase.from("transactions").insert({
+        gig_id: gig.id,
+        to_user_id: gig.client_id,
+        amount: pricingTotal,
+        subtotal_amount: pricingSubtotal,
+        fee_amount: pricingFee,
+        total_amount: pricingTotal,
+        type: "refund" as const,
+      });
       await refreshProfile();
       toast.success("Gig cancelled. Funds refunded.");
     } else {
@@ -174,7 +194,7 @@ export default function GigDetailPage() {
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">{gig.description}</p>
             <div className="flex flex-wrap gap-4 text-sm">
-              <span className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-muted-foreground" /> R{gig.budget.toFixed(2)}</span>
+              <span className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-muted-foreground" /> R{pricingTotal.toFixed(2)}</span>
               <span className="flex items-center gap-1"><MapPin className="h-4 w-4 text-muted-foreground" /> {gig.location}</span>
               <span className="flex items-center gap-1"><Clock className="h-4 w-4 text-muted-foreground" /> {gig.created_at ? formatDistanceToNow(new Date(gig.created_at), { addSuffix: true }) : ""}</span>
               <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground capitalize text-xs">{gig.category}</span>
@@ -182,6 +202,12 @@ export default function GigDetailPage() {
             {hustlerProfile && (
               <p className="text-sm">Assigned to: <span className="font-medium">{hustlerProfile.full_name}</span></p>
             )}
+            <div className="rounded-md border p-3 text-sm space-y-1">
+              <p>Subtotal: <span className="font-mono">R{pricingSubtotal.toFixed(2)}</span></p>
+              <p>Platform Fee: <span className="font-mono">R{pricingFee.toFixed(2)}</span></p>
+              <p>Total: <span className="font-mono">R{pricingTotal.toFixed(2)}</span></p>
+              {isHustler && <p className="text-xs text-muted-foreground">You will receive the subtotal amount.</p>}
+            </div>
 
             {/* Client actions */}
             {isClient && gig.status === "pending_confirmation" && !gig.client_confirmed && (

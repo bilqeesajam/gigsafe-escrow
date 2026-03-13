@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Briefcase, Wallet, PlusCircle, ShoppingBag, DollarSign,
-  Users, Shield, AlertTriangle, LogOut, User,
+  Users, Shield, AlertTriangle, LogOut, User, Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth-context";
@@ -31,6 +31,8 @@ const adminLinks = [
   { title: "KYC Queue", url: "/admin/kyc", icon: Shield },
   { title: "All Gigs", url: "/admin/gigs", icon: Briefcase },
   { title: "Disputes", url: "/admin/disputes", icon: AlertTriangle },
+  { title: "Pricing", url: "/admin/pricing", icon: Settings },
+  { title: "Pricing Overrides", url: "/admin/pricing-overrides", icon: DollarSign },
   { title: "Users", url: "/admin/users", icon: Users },
 ];
 

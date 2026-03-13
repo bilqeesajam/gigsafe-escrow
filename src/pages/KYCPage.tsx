@@ -45,7 +45,6 @@ export default function KYCPage() {
       phone: phone.trim(),
       id_number: idNumber.trim(),
       kyc_status: "pending",
-      selfie_url: selfieUrl,
     }).eq("id", user.id);
 
     setLoading(false);

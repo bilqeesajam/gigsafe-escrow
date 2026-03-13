@@ -2,20 +2,17 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
 import { Loader2, Users, Briefcase, AlertTriangle, Shield } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
-
-type Profile = Tables<"profiles">;
+import { Button } from "@/components/ui/button";
+import { backendRequest } from "@/lib/backend";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ users: 0, pendingKyc: 0, openGigs: 0, disputes: 0 });
   const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -38,10 +35,36 @@ export default function AdminDashboardPage() {
     { label: "Open Disputes", value: stats.disputes, icon: AlertTriangle, route: "/admin/disputes" },
   ];
 
+  const handleTestBackend = async () => {
+    setTesting(true);
+    try {
+      await backendRequest("/api/health/", { method: "GET" });
+      const configRes = await backendRequest<{ data: Array<{ category: string }> }>("/api/pricing/config/", { method: "GET" });
+      const hasErrand = (configRes.data ?? []).some((cfg) => cfg.category === "errand");
+      if (!hasErrand) {
+        throw new Error("No pricing config found for 'errand'. Add one in Admin > Pricing.");
+      }
+      await backendRequest("/api/pricing/quote/", {
+        body: { category: "errand", hours: 1, distance_km: 1, complexity_keys: [] },
+      });
+      toast.success("Backend test passed (health + pricing config + quote).");
+    } catch (error: any) {
+      toast.error(error?.message ?? "Backend test failed.");
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-        <h2 className="text-2xl font-bold">Admin Dashboard</h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-bold">Admin Dashboard</h2>
+          <Button onClick={handleTestBackend} disabled={testing}>
+            {testing && <Loader2 className="h-4 w-4 animate-spin" />}
+            Test Backend
+          </Button>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((c) => (
             <Card key={c.label} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(c.route)}>

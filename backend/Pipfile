@@ -1,0 +1,35 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = ">=4.3"
+djangorestframework = "*"
+djangorestframework-simplejwt = "*"
+django-axes = "*"
+django-two-factor-auth = "*"
+django-otp = "*"
+argon2-cffi = "*"
+dj-payfast = "*"
+requests = "*"
+django-filter = "*"
+drf-spectacular = "*"
+psycopg2-binary = "*"
+django-model-utils = "*"
+django-simple-history = "*"
+boto3 = "*"
+django-storages = "*"
+pillow = "*"
+weasyprint = "*"
+gunicorn = "*"
+whitenoise = "*"
+pytest-django = "*"
+pytest-cov = "*"
+factory-boy = "*"
+django-cors-headers = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"

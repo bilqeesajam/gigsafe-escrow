@@ -26,7 +26,7 @@ export default function EarningsPage() {
       .then(({ data }) => { setCompletedGigs(data || []); setLoading(false); });
   }, [user]);
 
-  const totalEarnings = completedGigs.reduce((sum, g) => sum + g.budget, 0);
+  const totalEarnings = completedGigs.reduce((sum, g: any) => sum + (g.pricing_subtotal ?? g.budget), 0);
 
   if (loading) return <AppLayout><div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div></AppLayout>;
 
@@ -71,7 +71,7 @@ export default function EarningsPage() {
                         {gig.updated_at ? formatDistanceToNow(new Date(gig.updated_at), { addSuffix: true }) : ""}
                       </p>
                     </div>
-                    <span className="font-mono font-semibold text-success text-sm">+R{gig.budget.toFixed(2)}</span>
+                    <span className="font-mono font-semibold text-success text-sm">+R{((gig as any).pricing_subtotal ?? gig.budget).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
