@@ -36,7 +36,7 @@ export default function KYCPendingPage() {
               ? "Your identity verification was rejected. Please contact support."
               : "Your identity verification is being reviewed. You'll be notified once approved."}
           </p>
-          <Button variant="outline" onClick={signOut} className="mt-4">Sign Out</Button>
+          <Button variant="outline" onClick={handleSignOut} className="mt-4">Sign Out</Button>
         </CardContent>
       </Card>
     </div>
