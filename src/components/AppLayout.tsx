@@ -15,8 +15,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center justify-between border-b bg-card px-4 shrink-0">
             <div className="flex items-center gap-2">
-              <SidebarTrigger />
-              <span className="text-sm text-muted-foreground hidden sm:block">
+              <span className="text-l font-medium text-muted-foreground hidden sm:block">
                 {profile?.full_name || "Welcome"}
               </span>
             </div>

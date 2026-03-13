@@ -97,6 +97,28 @@ export default function WalletPage() {
                 </div>
               </DialogContent>
             </Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="mt-4">
+                  <Plus className="h-4 w-4" /> Top Up
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Top Up Wallet</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Amount (R)</Label>
+                    <Input type="number" min="1" step="0.01" value={topUpAmount} onChange={(e) => setTopUpAmount(e.target.value)} placeholder="100.00" />
+                  </div>
+                  <Button onClick={handleTopUp} disabled={loading} className="w-full">
+                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Add Funds
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
