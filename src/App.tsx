@@ -30,6 +30,10 @@ import AdminPricingPage from "./pages/admin/AdminPricingPage";
 import AdminPricingOverridesPage from "./pages/admin/AdminPricingOverridesPage";
 import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/ProfilePage";
+import PricingPage from "./pages/PricingPage";
+import ContactPage from "./pages/ContactPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +62,10 @@ function App() {
             <Route path="/my-jobs" element={<ProtectedRoute><MyJobsPage /></ProtectedRoute>} />
             <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
             <Route path="/admin/kyc" element={<ProtectedRoute requireRole="admin"><AdminKYCPage /></ProtectedRoute>} />
             <Route path="/admin/gigs" element={<ProtectedRoute requireRole="admin"><AdminGigsPage /></ProtectedRoute>} />

@@ -14,18 +14,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { profile } = useAuth();
-
   // After successful login, check profile and redirect appropriately
+  const { profile, loading: authLoading } = useAuth()
+
+// Then update the useEffect:
   useEffect(() => {
-    if (profile !== undefined && profile !== null) {
-      if (profile.role) {
-        navigate("/dashboard", { replace: true });
-      } else {
-        navigate("/choose-role", { replace: true });
-      }
+  if (authLoading) return
+  if (profile !== null) {
+    if (profile.role === 'admin') {
+      navigate("/admin", { replace: true })
+    } else if (profile.kyc_status === 'approved') {
+      navigate("/dashboard", { replace: true })
+    } else if (profile.kyc_status === 'rejected' || profile.kyc_status === 'pending') {
+      navigate("/kyc", { replace: true })
     }
-  }, [profile, navigate]);
+  }
+}, [profile, authLoading, navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

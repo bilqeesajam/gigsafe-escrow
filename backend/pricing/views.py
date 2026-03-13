@@ -24,6 +24,12 @@ def to_decimal(value, default=None):
         return default
 
 
+def to_number(value):
+    if isinstance(value, Decimal):
+        return float(value)
+    return value
+
+
 def supabase_request(method, path, token, params=None, payload=None, prefer_return=False):
     if not settings.SUPABASE_URL or not settings.SUPABASE_ANON_KEY:
         raise ValueError("Supabase not configured")
@@ -117,7 +123,7 @@ class PricingConfigView(APIView):
             "updated_reason": str(change_reason).strip(),
         }
 
-        payload = {"category": category, **values}
+        payload = {"category": category, **{k: to_number(v) for k, v in values.items()}}
         try:
             resp = supabase_request(
                 "POST",
@@ -253,6 +259,7 @@ class GigCreateView(APIView):
             adjustment_pct = (requested_total - result.total) / result.total * Decimal("100")
 
         pricing_status = "pending_admin" if requires_approval else "auto_approved"
+        gig_status = "disputed" if requires_approval else "open"
         pricing_snapshot = {
             "category": config.get("category"),
             "base_hourly_rate": str(config.get("base_hourly_rate")),
@@ -286,7 +293,7 @@ class GigCreateView(APIView):
                     "description": description,
                     "location": location,
                     "category": category,
-                    "status": "open",
+                    "status": gig_status,
                     "budget": float(requested_total),
                     "pricing_config_id": config.get("id"),
                     "pricing_snapshot": pricing_snapshot,
@@ -419,7 +426,7 @@ class PricingOverrideDecisionView(APIView):
                     "gigs",
                     request.auth,
                     params={"id": f"eq.{override.get('gig_id')}"},
-                    payload={"pricing_status": "approved"},
+                    payload={"pricing_status": "approved", "status": "open"},
                 )
             else:
                 gig = sb_single(

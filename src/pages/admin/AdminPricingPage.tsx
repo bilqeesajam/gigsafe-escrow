@@ -38,7 +38,42 @@ export default function AdminPricingPage() {
   const [history, setHistory] = useState<PricingHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  const [seeded, setSeeded] = useState(false);
   const [formState, setFormState] = useState<Record<string, any>>({});
+
+  const seedDefaults = async (missing: string[]) => {
+    if (missing.length === 0) return;
+    setSeeding(true);
+    try {
+      const defaults = {
+        base_hourly_rate: "80",
+        per_km_rate: "5",
+        platform_fee_percentage: "10",
+        min_budget: "50",
+        max_budget: "500",
+        suggested_band_pct: "20",
+        complexity_multipliers: { weekend: 1.5, urgent: 1.2 },
+      };
+
+      await Promise.all(
+        missing.map((category) =>
+          backendRequest("/api/pricing/config/", {
+            body: {
+              change_reason: "Initial seed",
+              config: { category, ...defaults },
+            },
+          }),
+        ),
+      );
+      toast.success("Default pricing configs created.");
+    } catch (error: any) {
+      toast.error(error?.message ?? "Failed to seed default pricing configs");
+    } finally {
+      setSeeding(false);
+      setSeeded(true);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -72,6 +107,15 @@ export default function AdminPricingPage() {
         }
       });
       setFormState(initial);
+
+      if (!seeded) {
+        const missing = categories.filter((cat) => !(configRes.data ?? []).some((cfg) => cfg.category === cat));
+        if (missing.length > 0) {
+          await seedDefaults(missing);
+          await fetchData();
+          return;
+        }
+      }
     } catch (error: any) {
       toast.error(error?.message ?? "Failed to load pricing config");
     } finally {
