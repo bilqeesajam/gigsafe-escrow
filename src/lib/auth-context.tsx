@@ -14,6 +14,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   verifyEmail: (token: string, email: string) => Promise<{ error: Error | null }>
+  refreshProfile: () => Promise<void>  // ← added
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -101,8 +102,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const refreshProfile = async () => {
+    if (!user) return
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+    setProfile(data ?? null)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut, verifyEmail }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut, verifyEmail, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
