@@ -31,21 +31,21 @@ const ExactGigCard = ({ gig, onClick }: { gig: Gig; onClick: () => void }) => {
         return (
           <p className="text-sm text-foreground">
             Status:{" "}
-            <span className="text-yellow-500 font-semibold">Funds Secured</span>{" "}
+            <span className="text-primary font-semibold">Funds Secured</span>{" "}
             <span className="text-muted-foreground font-normal">(Awaiting Delivery)</span>
           </p>
         );
       case "disputed":
         return (
           <p className="text-sm text-foreground">
-            Status: <span className="text-yellow-500 font-semibold">Dispute in Progress</span>
+            Status: <span className="text-primary font-semibold">Dispute in Progress</span>
           </p>
         );
       case "completed":
         return (
           <p className="text-sm text-foreground">
             Status:{" "}
-            <span className="text-yellow-500 font-semibold">Delivered</span>{" "}
+            <span className="text-primary font-semibold">Delivered</span>{" "}
             <span className="text-muted-foreground font-normal">(Under Review)</span>
           </p>
         );
