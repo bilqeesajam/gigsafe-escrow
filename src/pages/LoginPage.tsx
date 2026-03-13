@@ -21,7 +21,9 @@ export default function LoginPage() {
   useEffect(() => {
   if (authLoading) return
   if (profile !== null) {
-    if (profile.kyc_status === 'approved') {
+    if (profile.role === 'admin') {
+      navigate("/admin", { replace: true })
+    } else if (profile.kyc_status === 'approved') {
       navigate("/dashboard", { replace: true })
     } else if (profile.kyc_status === 'rejected' || profile.kyc_status === 'pending') {
       navigate("/kyc", { replace: true })

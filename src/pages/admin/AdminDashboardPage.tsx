@@ -2,15 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
 import { Loader2, Users, Briefcase, AlertTriangle, Shield } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
-
-type Profile = Tables<"profiles">;
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -37,6 +31,7 @@ export default function AdminDashboardPage() {
     { label: "Open Gigs", value: stats.openGigs, icon: Briefcase, route: "/admin/gigs" },
     { label: "Open Disputes", value: stats.disputes, icon: AlertTriangle, route: "/admin/disputes" },
   ];
+
 
   return (
     <AppLayout>

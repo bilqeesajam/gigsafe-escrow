@@ -38,7 +38,10 @@ export default function AdminDisputesPage() {
   const handleResolve = async (dispute: Dispute & { gig?: Gig }) => {
     if (!dispute.gig) return;
     setResolving(dispute.id);
-    const gig = dispute.gig;
+    const gig = dispute.gig as any;
+    const pricingSubtotal = gig.pricing_subtotal ?? gig.budget;
+    const pricingTotal = gig.pricing_total ?? gig.budget;
+    const pricingFee = gig.pricing_fee ?? 0;
 
     // Update dispute
     await supabase.from("disputes").update({
@@ -51,8 +54,16 @@ export default function AdminDisputesPage() {
     if (resolution === "resolved_client") {
       // Refund to client
       const { data: cp } = await supabase.from("profiles").select("balance").eq("id", gig.client_id).single();
-      await supabase.from("profiles").update({ balance: (cp?.balance || 0) + gig.budget }).eq("id", gig.client_id);
-      await supabase.from("transactions").insert({ gig_id: gig.id, to_user_id: gig.client_id, amount: gig.budget, type: "refund" as const });
+      await supabase.from("profiles").update({ balance: (cp?.balance || 0) + pricingTotal }).eq("id", gig.client_id);
+      await supabase.from("transactions").insert({
+        gig_id: gig.id,
+        to_user_id: gig.client_id,
+        amount: pricingTotal,
+        subtotal_amount: pricingSubtotal,
+        fee_amount: pricingFee,
+        total_amount: pricingTotal,
+        type: "refund" as const,
+      });
       await supabase.from("gigs").update({ status: "cancelled" as any }).eq("id", gig.id);
       await supabase.from("notifications").insert({ user_id: gig.client_id, message: `Dispute on "${gig.title}" resolved in your favor. Funds refunded.`, gig_id: gig.id });
       if (gig.hustler_id) await supabase.from("notifications").insert({ user_id: gig.hustler_id, message: `Dispute on "${gig.title}" resolved. Funds returned to client.`, gig_id: gig.id });
@@ -60,8 +71,17 @@ export default function AdminDisputesPage() {
       // Release to hustler
       if (gig.hustler_id) {
         const { data: hp } = await supabase.from("profiles").select("balance").eq("id", gig.hustler_id).single();
-        await supabase.from("profiles").update({ balance: (hp?.balance || 0) + gig.budget }).eq("id", gig.hustler_id);
-        await supabase.from("transactions").insert({ gig_id: gig.id, to_user_id: gig.hustler_id, from_user_id: gig.client_id, amount: gig.budget, type: "release" as const });
+        await supabase.from("profiles").update({ balance: (hp?.balance || 0) + pricingSubtotal }).eq("id", gig.hustler_id);
+        await supabase.from("transactions").insert({
+          gig_id: gig.id,
+          to_user_id: gig.hustler_id,
+          from_user_id: gig.client_id,
+          amount: pricingSubtotal,
+          subtotal_amount: pricingSubtotal,
+          fee_amount: pricingFee,
+          total_amount: pricingTotal,
+          type: "release" as const,
+        });
         await supabase.from("gigs").update({ status: "completed" as any }).eq("id", gig.id);
         await supabase.from("notifications").insert({ user_id: gig.hustler_id, message: `Dispute on "${gig.title}" resolved in your favor. Funds released.`, gig_id: gig.id });
         await supabase.from("notifications").insert({ user_id: gig.client_id, message: `Dispute on "${gig.title}" resolved. Funds released to hustler.`, gig_id: gig.id });

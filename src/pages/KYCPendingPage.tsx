@@ -1,4 +1,5 @@
 import { Shield, Clock, Link } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 export default function KYCPendingPage() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (profile?.kyc_status === "approved") {
+      navigate("/dashboard");
+    }
+  }, [profile, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,9 +43,7 @@ export default function KYCPendingPage() {
               ? "Your identity verification was rejected. Please contact support."
               : "Your identity verification is being reviewed. You'll be notified once approved."}
           </p>
-          <Link to="/login" className="block">
-            <Button variant="outline" className="mt-4">Sign Out</Button>
-          </Link>
+          <Button variant="outline" onClick={handleSignOut} className="mt-4">Sign Out</Button>
         </CardContent>
       </Card>
     </div>
