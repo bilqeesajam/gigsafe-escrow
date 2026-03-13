@@ -232,8 +232,8 @@ export default function GigDetailPage() {
         <CardTitle className="flex items-center justify-between w-full">
           <p className="text-base font-medium">Transactions</p>
           <div className="flex gap-2">
-            <button className="px-4 py-1 bg-yellow-400 rounded-full text-xs text-black">Email</button>
-            <button className="px-4 py-1 bg-yellow-400 rounded-full text-xs text-black">PDF</button>
+            <Button variant="outline" size="sm" className="rounded-full text-xs px-4 py-1">Email</Button>
+            <Button variant="outline" size="sm" className="rounded-full text-xs px-4 py-1">PDF</Button>
           </div>
         </CardTitle>
         <Card>
@@ -292,7 +292,7 @@ export default function GigDetailPage() {
                 )}
                 {hustlerProfile && (
                   <div>
-                    <p className="text-muted-foreground">Hustlet</p>
+                    <p className="text-muted-foreground">Hustler</p>
                     <p>giveusjobs@gmail.com</p>
                   </div>
                 )}
