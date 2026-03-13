@@ -102,6 +102,8 @@
   }
 
   h1, h2, h3 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Roboto', sans-serif;
   }
 }
+
+body::-webkit-scrollbar { display: none; }

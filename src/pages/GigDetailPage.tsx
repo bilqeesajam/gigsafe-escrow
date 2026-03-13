@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Loader2, MapPin, DollarSign, Clock, AlertTriangle } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { formatDistanceToNow } from "date-fns";
+import { Timeline, TimelineEvent } from "@/components/Timeline";
 
 type Gig = Tables<"gigs">;
 
@@ -23,6 +24,7 @@ export default function GigDetailPage() {
   const navigate = useNavigate();
   const [gig, setGig] = useState<Gig | null>(null);
   const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [actionLoading, setActionLoading] = useState(false);
   const [showDispute, setShowDispute] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
@@ -40,7 +42,70 @@ export default function GigDetailPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchGig(); }, [id]);
+  const fetchTimeline = async () => {
+    if (!id) return;
+
+    const events: TimelineEvent[] = [];
+
+    // Fetch gig
+    const { data: gigData } = await supabase.from("gigs").select("*").eq("id", id).single();
+    if (!gigData) return;
+
+    // Gig creation
+    events.push({ id: gigData.id, event_type: "created", message: "Gig created", created_at: gigData.created_at });
+
+    // Status-based events
+    if (gigData.hustler_id) {
+      events.push({ id: `${gigData.id}-accepted`, event_type: "seller_accepted", message: "Hustler accepted the gig", created_at: gigData.updated_at });
+    }
+    if (gigData.status === "in_progress") {
+      events.push({ id: `${gigData.id}-started`, event_type: "marked_delivered", message: "Gig in progress", created_at: gigData.updated_at });
+    }
+    if (gigData.status === "pending_confirmation" && gigData.client_confirmed) {
+      events.push({ id: `${gigData.id}-pending`, event_type: "buyer_confirmed", message: "Client confirmed", created_at: gigData.updated_at });
+    }
+    if (gigData.status === "completed") {
+      events.push({ id: `${gigData.id}-completed`, event_type: "released", message: "Funds released", created_at: gigData.updated_at });
+    }
+    if (gigData.status === "disputed") {
+      events.push({ id: `${gigData.id}-disputed`, event_type: "dispute_opened", message: "Dispute opened", created_at: gigData.updated_at });
+    }
+    if (gigData.status === "cancelled") {
+      events.push({ id: `${gigData.id}-cancelled`, event_type: "cancelled", message: "Gig cancelled", created_at: gigData.updated_at });
+    }
+
+    // Transactions
+    const { data: txns } = await supabase.from("transactions").select("*").eq("gig_id", id).order("created_at", { ascending: true });
+    txns?.forEach(t => {
+      events.push({
+        id: t.id,
+        event_type: t.type,
+        message: `R${t.amount.toFixed(2)} ${t.type}`,
+        created_at: t.created_at,
+      });
+    });
+
+    // Disputes
+    const { data: disputes } = await supabase.from("disputes").select("*").eq("gig_id", id).order("created_at", { ascending: true });
+    disputes?.forEach(d => {
+      events.push({
+        id: d.id,
+        event_type: d.status === "open" ? "dispute_opened" : "dispute_resolved",
+        message: d.reason,
+        created_at: d.created_at,
+      });
+    });
+
+    // Sort by date
+    events.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+    setEvents(events);
+  };
+
+  useEffect(() => {
+    fetchGig();
+    fetchTimeline(); // fetch timeline events too
+  }, [id]);
 
   if (loading) return <AppLayout><div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div></AppLayout>;
   if (!gig) return <AppLayout><p className="text-center text-muted-foreground py-16">Gig not found</p></AppLayout>;
@@ -164,24 +229,78 @@ export default function GigDetailPage() {
       <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">← Back</Button>
 
+        <CardTitle className="flex items-center justify-between w-full">
+          <p className="text-base font-medium">Transactions</p>
+          <div className="flex gap-2">
+            <button className="px-4 py-1 bg-yellow-400 rounded-full text-xs text-black">Email</button>
+            <button className="px-4 py-1 bg-yellow-400 rounded-full text-xs text-black">PDF</button>
+          </div>
+        </CardTitle>
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-xl">{gig.title}</CardTitle>
-              <StatusBadge status={gig.status} />
+              <CardTitle className="text-2xl text-transform: capitalize">{gig.title}</CardTitle>
+              <StatusBadge status={gig.status || "Completed"} />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-muted-foreground">{gig.description}</p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <span className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-muted-foreground" /> R{gig.budget.toFixed(2)}</span>
-              <span className="flex items-center gap-1"><MapPin className="h-4 w-4 text-muted-foreground" /> {gig.location}</span>
-              <span className="flex items-center gap-1"><Clock className="h-4 w-4 text-muted-foreground" /> {gig.created_at ? formatDistanceToNow(new Date(gig.created_at), { addSuffix: true }) : ""}</span>
-              <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground capitalize text-xs">{gig.category}</span>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-8">
+              <div>
+                <p className="text-muted-foreground">Description</p>
+                <p>{gig.description}</p>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground">Date</p>
+                <span className="flex items-center gap-1">
+                  {gig.created_at
+                    ? formatDistanceToNow(new Date(gig.created_at), { addSuffix: true })
+                    : ""}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground">Address</p>
+                <span className="flex items-center gap-1">{gig.location}</span>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground">Category</p>
+                <span className="flex items-center gap-1">{gig.category}</span>
+              </div>
             </div>
-            {hustlerProfile && (
-              <p className="text-sm">Assigned to: <span className="font-medium">{hustlerProfile.full_name}</span></p>
-            )}
+            <div>
+              <div>
+                <p className="text-muted-foreground">Paid Amount</p>
+                <span className="flex items-center gap-1">R {gig.budget.toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div className="mb-4">
+                <p className="text-muted-foreground">% Fee</p>
+                <span className="flex items-center gap-1">R {gig.budget.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-8 gap-y-8">
+                {hustlerProfile && (
+                  <div>
+                    <p className="text-muted-foreground">Hustler Pay</p>
+                    <p>R 80.00</p>
+                  </div>
+                )}
+                {hustlerProfile && (
+                  <div>
+                    <p className="text-muted-foreground">Hustlet</p>
+                    <p>giveusjobs@gmail.com</p>
+                  </div>
+                )}
+              </div>
+
+
+            </div>
+
 
             {/* Client actions */}
             {isClient && gig.status === "pending_confirmation" && !gig.client_confirmed && (
@@ -235,6 +354,19 @@ export default function GigDetailPage() {
                 <Button variant="outline" size="sm" onClick={() => setShowCancel(true)}>Cancel Gig</Button>
               )}
             </div>
+          </CardContent>
+          
+        </Card>
+        <CardTitle>
+          <p className="text-base font-medium">Timeline</p>
+        </CardTitle>
+        <Card>
+          <CardContent className="mt-7">
+            {events.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No events yet</p>
+            ) : (
+              <Timeline events={events} />
+            )}
           </CardContent>
         </Card>
 
