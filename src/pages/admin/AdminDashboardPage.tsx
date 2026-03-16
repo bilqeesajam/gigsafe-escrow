@@ -2,14 +2,18 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Users, Briefcase, AlertTriangle, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { backendRequest } from "@/lib/backend";
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ users: 0, pendingKyc: 0, openGigs: 0, disputes: 0 });
   const [loading, setLoading] = useState(true);
+  const [healthChecking, setHealthChecking] = useState(false);
+  const [healthStatus, setHealthStatus] = useState<null | { status: "ok" | "error"; detail?: string }>(null);
 
   useEffect(() => {
     Promise.all([
@@ -32,6 +36,25 @@ export default function AdminDashboardPage() {
     { label: "Open Disputes", value: stats.disputes, icon: AlertTriangle, route: "/admin/disputes" },
   ];
 
+  const runHealthCheck = async () => {
+    setHealthChecking(true);
+    try {
+      const data = await backendRequest<{ status: "ok" | "error"; detail?: string }>("/api/health/", { method: "GET" });
+      setHealthStatus({ status: data.status, detail: data.detail });
+      if (data.status === "ok") {
+        toast.success("Backend health check passed");
+      } else {
+        toast.error(data.detail || "Backend health check failed");
+      }
+    } catch (error: any) {
+      const message = error?.message ?? "Backend health check failed";
+      setHealthStatus({ status: "error", detail: message });
+      toast.error(message);
+    } finally {
+      setHealthChecking(false);
+    }
+  };
+
 
   return (
     <AppLayout>
@@ -50,6 +73,27 @@ export default function AdminDashboardPage() {
             </Card>
           ))}
         </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Backend Health Check</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <Button onClick={runHealthCheck} disabled={healthChecking}>
+                {healthChecking && <Loader2 className="h-4 w-4 animate-spin" />}
+                Test Backend
+              </Button>
+              {healthStatus && (
+                <span className="text-sm text-muted-foreground">
+                  {healthStatus.status === "ok" ? "Healthy" : `Error: ${healthStatus.detail || "Unknown error"}`}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This checks the backend + Supabase connection using `/api/health/`.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

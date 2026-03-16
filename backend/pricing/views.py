@@ -63,6 +63,22 @@ def sb_single(table, token, filters=None, select="*"):
     return data[0] if data else None
 
 
+def classify_override(override):
+    reason = str(override.get("reason") or "").lower()
+    if any(key in reason for key in ["km", "kms", "kilometer", "kilometre"]):
+        return "too_much_kms"
+
+    requested = to_decimal(override.get("requested_budget"))
+    suggested = to_decimal(override.get("suggested_budget"))
+    if requested is not None and suggested is not None:
+        if requested > suggested:
+            return "overpricing"
+        if requested < suggested:
+            return "underpricing"
+
+    return "other"
+
+
 class PricingConfigView(APIView):
     permission_classes = [IsAdminRole]
 
@@ -386,6 +402,22 @@ class PricingOverrideListView(APIView):
                 request.auth,
                 filters={"status": "eq.pending", "order": "created_at.asc"},
             )
+            gig_ids = [item.get("gig_id") for item in data if item.get("gig_id")]
+            gig_map = {}
+            if gig_ids:
+                id_list = ",".join(gig_ids)
+                gigs = sb_select(
+                    "gigs",
+                    request.auth,
+                    filters={"id": f"in.({id_list})"},
+                    select="id,title,category,status,pricing_inputs,pricing_subtotal,pricing_total,pricing_fee,budget",
+                )
+                gig_map = {gig.get("id"): gig for gig in gigs}
+
+            for item in data:
+                if item.get("gig_id") and item.get("gig_id") in gig_map:
+                    item["gig"] = gig_map.get(item.get("gig_id"))
+                item["reason_category"] = classify_override(item)
         except Exception as exc:
             return Response({"error": str(exc)}, status=500)
         return Response({"data": data})

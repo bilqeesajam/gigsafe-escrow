@@ -27,7 +27,6 @@ import AdminGigsPage from "./pages/admin/AdminGigsPage";
 import AdminDisputesPage from "./pages/admin/AdminDisputesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminPricingPage from "./pages/admin/AdminPricingPage";
-import AdminPricingOverridesPage from "./pages/admin/AdminPricingOverridesPage";
 import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/ProfilePage";
 import PricingPage from "./pages/PricingPage";
@@ -72,7 +71,7 @@ function App() {
             <Route path="/admin/disputes" element={<ProtectedRoute requireRole="admin"><AdminDisputesPage /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireRole="admin"><AdminUsersPage /></ProtectedRoute>} />
             <Route path="/admin/pricing" element={<ProtectedRoute requireRole="admin"><AdminPricingPage /></ProtectedRoute>} />
-            <Route path="/admin/pricing-overrides" element={<ProtectedRoute requireRole="admin"><AdminPricingOverridesPage /></ProtectedRoute>} />
+            <Route path="/admin/pricing-overrides" element={<ProtectedRoute requireRole="admin"><AdminDisputesPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
