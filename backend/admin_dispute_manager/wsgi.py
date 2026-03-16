@@ -8,7 +8,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "admin_dispute_manager.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gigsafe_backend.settings")
 
 application = get_wsgi_application()
 

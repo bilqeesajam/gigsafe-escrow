@@ -1,48 +1,35 @@
 """
-Django settings for the admin_dispute_manager project.
+Django settings for the admin_dispute_manager app.
 
-This project previously lived under the `core` package; it has been moved
-into `admin_dispute_manager` so the backend's Django entrypoints and config
-are colocated with the app.
+This app is part of the gigsafe_backend project and uses the core
+gigsafe_backend.settings module as its primary configuration.
 """
 
 from pathlib import Path
-
 import os
 
-from dotenv import load_dotenv
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Always load backend/.env regardless of the working directory (repo root also has a .env).
-load_dotenv(BASE_DIR / ".env")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
+DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-bq$$o+08@*s6$zmu#7&uaqic8a_ik7r_&$ws$t977_kg8)2%va"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS: list[str] = []
-
-
-# Application definition
+ALLOWED_HOSTS = ['15.240.44.47', 'ec2-15-240-44-47.af-south-1.compute.amazonaws.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
-    "admin_dispute_manager",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "corsheaders",
+    "admin_dispute_manager",
+    "pricing",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -52,7 +39,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "admin_dispute_manager.project_urls"
+ROOT_URLCONF = "gigsafe_backend.urls"
 
 TEMPLATES = [
     {
@@ -61,6 +48,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -69,33 +57,58 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "admin_dispute_manager.wsgi.application"
+WSGI_APPLICATION = "gigsafe_backend.wsgi.application"
 
-# Database - removed direct DB connection, using Supabase API instead
-DATABASES = {}
-
-# Supabase
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Africa/Johannesburg"
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = "static/"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://gigsafe-frontend.s3-website.af-south-1.amazonaws.com",
+]
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "pricing.auth.SupabaseJWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://dyjvzjrjrclpevuzgtif.supabase.co")
+SUPABASE_ANON_KEY = os.getenv(
+    "SUPABASE_ANON_KEY",
+    os.getenv(
+        "SUPABASE_PUBLISHABLE_KEY",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5anZ6anJqcmNscGV2dXpndGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNDU4MTcsImV4cCI6MjA4ODgyMTgxN30.N0vf0RjEOjUaCqRny0DYJwXlJ4kO_TgxbOxADEq6_Fs",
+    ),
+)
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
 
 # Internationalization
