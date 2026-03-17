@@ -1,0 +1,23 @@
+# Environment
+.env.example
+
+# Database
+db.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Static files
+staticfiles/
+
+# Pipenv
+.venv/
+
+# Static files
+staticfiles/
+
+# .DS_STORES
+.DS_STORES/
