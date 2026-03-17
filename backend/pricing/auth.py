@@ -18,14 +18,16 @@ class SupabaseJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
-            raise AuthenticationFailed("Authorization header required")
+            return None
 
         token = auth_header.replace("Bearer ", "", 1).strip()
         if not token:
-            raise AuthenticationFailed("Invalid token")
+            # raise AuthenticationFailed("Invalid token")
+            return None
 
         if not settings.SUPABASE_URL or not settings.SUPABASE_ANON_KEY:
-            raise AuthenticationFailed("Supabase is not configured")
+            # raise AuthenticationFailed("Supabase is not configured")
+            return None
 
         resp = requests.get(
             f"{settings.SUPABASE_URL}/auth/v1/user",
@@ -37,12 +39,14 @@ class SupabaseJWTAuthentication(BaseAuthentication):
         )
 
         if resp.status_code != 200:
-            raise AuthenticationFailed("Invalid token")
+            # raise AuthenticationFailed("Invalid token")
+            return None
 
         payload = resp.json()
         user_id = payload.get("id")
         if not user_id:
-            raise AuthenticationFailed("Invalid token")
+            # raise AuthenticationFailed("Invalid token")
+            return None
 
         profile_resp = requests.get(
             f"{settings.SUPABASE_URL}/rest/v1/profiles",
@@ -57,11 +61,13 @@ class SupabaseJWTAuthentication(BaseAuthentication):
             timeout=10,
         )
         if profile_resp.status_code != 200:
-            raise AuthenticationFailed("Profile not found")
+            # raise AuthenticationFailed("Profile not found")
+            return None
 
         profiles = profile_resp.json()
         if not profiles:
-            raise AuthenticationFailed("Profile not found")
+            # raise AuthenticationFailed("Profile not found")
+            return None
 
         profile = profiles[0]
 
