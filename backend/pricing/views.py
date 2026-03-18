@@ -34,7 +34,13 @@ def to_number(value):
     return value
 
 
-def supabase_request(method, path, token, params=None, payload=None, prefer_return=False):
+def supabase_user_id(request):
+    # Supabase-authenticated users are mirrored into Django users where
+    # username stores the upstream UUID and id is the local Django PK.
+    return str(getattr(request.user, "username", "") or getattr(request.user, "id", ""))
+
+
+def supabase_request(method, path, token, params=None, payload=None, prefer=None):
     if not settings.SUPABASE_URL or not settings.SUPABASE_ANON_KEY:
         raise ValueError("Supabase not configured")
 
@@ -44,8 +50,8 @@ def supabase_request(method, path, token, params=None, payload=None, prefer_retu
     }
     if payload is not None:
         headers["Content-Type"] = "application/json"
-    if prefer_return:
-        headers["Prefer"] = "return=representation"
+    if prefer:
+        headers["Prefer"] = prefer
 
     url = f"{settings.SUPABASE_URL}/rest/v1/{path}"
     resp = requests.request(method, url, headers=headers, params=params, json=payload, timeout=15)
@@ -123,7 +129,7 @@ class PricingConfigView(APIView):
             "min_budget": min_budget,
             "max_budget": max_budget,
             "suggested_band_pct": band_pct,
-            "updated_by": request.user.id,
+            "updated_by": supabase_user_id(request),
             "updated_reason": str(change_reason).strip(),
         }
 
@@ -135,10 +141,10 @@ class PricingConfigView(APIView):
                 request.auth,
                 params={"on_conflict": "category"},
                 payload=payload,
-                prefer_return=True,
+                prefer="resolution=merge-duplicates,return=representation",
             )
             if resp.status_code >= 300:
-                return Response({"error": resp.text}, status=500)
+                return Response({"error": resp.text}, status=resp.status_code)
             data = resp.json()
             return Response({"data": data[0] if data else payload})
         except Exception as exc:
@@ -214,6 +220,7 @@ class GigCreateView(APIView):
 
     def post(self, request):
         payload = request.data or {}
+        actor_id = supabase_user_id(request)
         title = str(payload.get("title", "")).strip()
         description = str(payload.get("description", "")).strip()
         location = str(payload.get("location", "")).strip()
@@ -250,7 +257,7 @@ class GigCreateView(APIView):
         if requires_approval and not override_reason:
             return Response({"error": "override_reason is required for out-of-band pricing"}, status=400)
 
-        profile = sb_single("profiles", request.auth, filters={"id": f"eq.{request.user.id}"}, select="id,balance")
+        profile = sb_single("profiles", request.auth, filters={"id": f"eq.{actor_id}"}, select="id,balance")
         if not profile:
             return Response({"error": "Profile not found"}, status=404)
 
@@ -280,9 +287,9 @@ class GigCreateView(APIView):
                 "PATCH",
                 "profiles",
                 request.auth,
-                params={"id": f"eq.{request.user.id}"},
+                params={"id": f"eq.{actor_id}"},
                 payload={"balance": float(balance - requested_total)},
-                prefer_return=True,
+                prefer="return=representation",
             )
             if balance_resp.status_code >= 300:
                 return Response({"error": balance_resp.text}, status=500)
@@ -292,7 +299,7 @@ class GigCreateView(APIView):
                 "gigs",
                 request.auth,
                 payload={
-                    "client_id": request.user.id,
+                    "client_id": actor_id,
                     "title": title,
                     "description": description,
                     "location": location,
@@ -316,7 +323,7 @@ class GigCreateView(APIView):
                     "platform_fee_percentage": float(Decimal(str(config.get("platform_fee_percentage")))),
                     "cart_value": float(cart_value) if cart_value is not None else None,
                 },
-                prefer_return=True,
+                prefer="return=representation",
             )
             if gig_resp.status_code >= 300:
                 return Response({"error": gig_resp.text}, status=500)
@@ -327,7 +334,7 @@ class GigCreateView(APIView):
                 "transactions",
                 request.auth,
                 payload={
-                    "from_user_id": request.user.id,
+                    "from_user_id": actor_id,
                     "gig_id": gig.get("id"),
                     "amount": float(requested_total),
                     "subtotal_amount": float(result.subtotal),
@@ -336,7 +343,7 @@ class GigCreateView(APIView):
                     "total_amount": float(requested_total),
                     "type": "hold",
                 },
-                prefer_return=True,
+                prefer="return=representation",
             )
             if txn_resp.status_code >= 300:
                 supabase_request(
@@ -355,7 +362,7 @@ class GigCreateView(APIView):
                     request.auth,
                     payload={
                         "gig_id": gig.get("id"),
-                        "client_id": request.user.id,
+                        "client_id": actor_id,
                         "category": category,
                         "requested_budget": float(requested_total),
                         "suggested_budget": float(result.total),
@@ -417,8 +424,8 @@ class PricingOverrideDecisionView(APIView):
             "pricing_overrides",
             request.auth,
             params={"id": f"eq.{override_id}"},
-            payload={"status": new_status, "admin_id": request.user.id, "admin_note": admin_note},
-            prefer_return=True,
+            payload={"status": new_status, "admin_id": supabase_user_id(request), "admin_note": admin_note},
+            prefer="return=representation",
         )
         if resp.status_code >= 300:
             return Response({"error": resp.text}, status=500)
