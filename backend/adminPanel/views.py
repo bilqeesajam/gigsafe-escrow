@@ -1,5 +1,8 @@
 # adminPanel/views.py
+import requests
+from django.conf import settings
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
@@ -78,3 +81,30 @@ class DashboardViewSet(viewsets.ViewSet):
         )
 
         return Response(last_7_days)
+
+
+class SupabaseUsersView(APIView):
+    permission_classes = [IsAdminOrSuperAdmin]
+
+    def get(self, request):
+        if not settings.SUPABASE_URL or not settings.SUPABASE_SERVICE_ROLE_KEY:
+            return Response({"error": "Supabase service role is not configured"}, status=500)
+
+        page = request.query_params.get("page", "")
+        per_page = request.query_params.get("per_page", "")
+
+        headers = {
+            "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
+            "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
+        }
+        params = {}
+        if page != "":
+            params["page"] = page
+        if per_page != "":
+            params["per_page"] = per_page
+
+        url = f"{settings.SUPABASE_URL}/auth/v1/admin/users"
+        resp = requests.get(url, headers=headers, params=params, timeout=15)
+        if resp.status_code >= 300:
+            return Response({"error": resp.text}, status=resp.status_code)
+        return Response(resp.json())

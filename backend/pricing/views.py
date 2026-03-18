@@ -9,12 +9,16 @@ from .services import calculate_pricing
 
 class IsAdminRole(BasePermission):
     def has_permission(self, request, view):
-        return getattr(request.user, "role", None) == "admin"
+        role = getattr(request.user, "role", None)
+        user_type = getattr(request.user, "user_type", None)
+        return role == "admin" or user_type == "admin"
 
 
 class IsClientRole(BasePermission):
     def has_permission(self, request, view):
-        return getattr(request.user, "role", None) == "client"
+        role = getattr(request.user, "role", None)
+        user_type = getattr(request.user, "user_type", None)
+        return role == "client" or user_type == "client"
 
 
 def to_decimal(value, default=None):
