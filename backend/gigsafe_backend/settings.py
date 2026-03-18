@@ -157,6 +157,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "http://15.240.44.47:8000",
     "http://gigsafe-frontend.s3-website.af-south-1.amazonaws.com",
     "https://gigsafe-backend-alb-536960805.af-south-1.elb.amazonaws.com",
 ]
