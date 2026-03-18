@@ -6,6 +6,7 @@ on:
     paths:
       - 'backend/**'
       - 'requirements.txt'
+      - 'backend/gigsafe_backend/settings.py'
   workflow_dispatch:
 
 jobs:
