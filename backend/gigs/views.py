@@ -1,3 +1,5 @@
+# gigs/views.py
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +11,116 @@ from adminPanel.permissions import IsAdminOrSuperAdmin
 from adminPanel.models import AdminAction
 from adminPanel.utils import get_client_ip
 from notifications.tasks import queue_email
+import logging
+import requests
+import uuid
+import os
+
+logger = logging.getLogger(__name__)
+
+
+def create_gig_in_supabase(gig, client_uuid: str) -> str | None:
+    """
+    Creates a gig directly in Supabase via REST API so the frontend can see it.
+    Returns the Supabase gig UUID if successful, None if failed.
+    """
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+    if not supabase_url or not service_role_key:
+        logger.error("Supabase credentials not configured")
+        return None
+
+    gig_id = str(uuid.uuid4())
+
+    payload = {
+        "id": gig_id,
+        "client_id": client_uuid,
+        "title": gig.title,
+        "description": gig.description,
+        "location": gig.location,
+        "category": gig.category,
+        "budget": float(gig.budget),
+        "status": "open",
+    }
+
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+    }
+
+    try:
+        response = requests.post(
+            f"{supabase_url}/rest/v1/gigs",
+            json=payload,
+            headers=headers,
+            timeout=10,
+        )
+
+        if response.status_code in [200, 201]:
+            print(f"Gig {gig_id} created in Supabase successfully")
+            return gig_id
+        else:
+            logger.error(f"Supabase gig creation failed: {response.status_code} {response.text}")
+            return None
+
+    except Exception as e:
+        logger.error(f"Supabase REST API error creating gig: {e}")
+        return None
+
+
+def create_transaction_in_supabase(gig, client_uuid: str, hustler_uuid: str) -> str | None:
+    """
+    Creates a hold transaction directly in Supabase via REST API.
+    Returns the transaction ID if successful, None if failed.
+    This avoids the need for a direct PostgreSQL connection.
+    """
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+    if not supabase_url or not service_role_key:
+        logger.error("Supabase credentials not configured")
+        return None
+
+    transaction_id = str(uuid.uuid4())
+
+    payload = {
+        "id": transaction_id,
+        "gig_id": str(gig.id) if gig.id else None,
+        "from_user_id": client_uuid,
+        "to_user_id": hustler_uuid,
+        "amount": float(gig.budget),
+        "type": "hold",
+        "note": f"Escrow hold for gig {gig.id}",
+    }
+
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+    }
+
+    try:
+        response = requests.post(
+            f"{supabase_url}/rest/v1/transactions",
+            json=payload,
+            headers=headers,
+            timeout=10,
+        )
+
+        if response.status_code in [200, 201]:
+            print(f"Transaction {transaction_id} created in Supabase successfully")
+            return transaction_id
+        else:
+            logger.error(f"Supabase transaction creation failed: {response.status_code} {response.text}")
+            return None
+
+    except Exception as e:
+        logger.error(f"Supabase REST API error: {e}")
+        return None
 
 
 class GigFilter(filters.FilterSet):
@@ -48,6 +160,18 @@ class GigViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         gig = serializer.save(client=self.request.user, status='open')
+
+        # Write gig to Supabase so the frontend can see it
+        try:
+            client_uuid = str(self.request.user.username)
+            supabase_gig_id = create_gig_in_supabase(gig, client_uuid)
+            if supabase_gig_id:
+                print(f"Gig also created in Supabase with ID: {supabase_gig_id}")
+            else:
+                logger.error(f"Failed to create gig {gig.id} in Supabase")
+        except Exception as e:
+            logger.error(f"Supabase gig creation error: {e}")
+
         queue_email(
             user_id=self.request.user.id,
             event_type='gig_created',
@@ -86,11 +210,40 @@ class GigViewSet(viewsets.ModelViewSet):
         gig.status = 'accepted'
         gig.save()
 
-        return Response({
+        # ---------------------------------------------------------------
+        # CREATE ESCROW TRANSACTION IN SUPABASE VIA REST API
+        # auth.py stores the Supabase UUID as request.user.username
+        # We write directly to Supabase so the frontend can see it
+        # immediately without needing a direct PostgreSQL connection
+        # ---------------------------------------------------------------
+        transaction_id = None
+        try:
+            client_uuid = str(gig.client.username)
+            hustler_uuid = str(request.user.username)
+
+            transaction_id = create_transaction_in_supabase(
+                gig=gig,
+                client_uuid=client_uuid,
+                hustler_uuid=hustler_uuid,
+            )
+
+            if not transaction_id:
+                logger.error(f"Failed to create escrow transaction for gig {gig.id}")
+
+        except Exception as e:
+            logger.error(f"Transaction creation error for gig {gig.id}: {e}")
+
+        response_data = {
             'status': 'Gig accepted.',
             'gig_id': gig.id,
             'new_status': gig.status,
-        })
+        }
+
+        if transaction_id:
+            response_data['transaction_id'] = transaction_id
+            response_data['next_step'] = f'Client must fund escrow at: /api/transactions/{transaction_id}/fund/'
+
+        return Response(response_data)
 
     @action(detail=True, methods=['patch'])
     def start(self, request, pk=None):
