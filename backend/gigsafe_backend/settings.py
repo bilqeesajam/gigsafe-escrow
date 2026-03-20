@@ -7,7 +7,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
-ALLOWED_HOSTS = ['15.240.44.47', 'ec2-15-240-44-47.af-south-1.compute.amazonaws.com', 'localhost', '127.0.0.1', 'gigsafe-backend-alb-536960805.af-south-1.elb.amazonaws.com']
+ALLOWED_HOSTS = ['15.240.44.47', 'ec2-15-240-44-47.af-south-1.compute.amazonaws.com', 'localhost', '127.0.0.1', 'gigsafe-backend-alb-536960805.af-south-1.elb.amazonaws.com','.ngrok-free.dev',
+    '.ngrok.io',]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -83,12 +84,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "gigsafe_backend.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if os.getenv("SUPABASE_DB_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "postgres",
+            "USER": os.getenv("SUPABASE_DB_USER", "postgres"),
+            "PASSWORD": os.getenv("SUPABASE_DB_PASSWORD", ""),
+            "HOST": os.getenv("SUPABASE_DB_HOST", ""),
+            "PORT": os.getenv("SUPABASE_DB_PORT", "5432"),
+            "OPTIONS": {
+                "sslmode": "require",
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -155,7 +171,9 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
     "http://localhost:8080",
+    "http://127.0.0.1:3000",
     "http://127.0.0.1:8080",
     "http://15.240.44.47:8000",
     "http://gigsafe-frontend.s3-website.af-south-1.amazonaws.com",
