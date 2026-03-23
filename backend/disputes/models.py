@@ -15,10 +15,12 @@ class Dispute(models.Model):
     transaction = models.ForeignKey(
         'transactions.Transaction', on_delete=models.PROTECT
     )
+    supabase_id = models.UUIDField(null=True, blank=True)
     raised_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT
     )
     reason = models.TextField()
+    admin_notes = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -32,8 +34,18 @@ class Dispute(models.Model):
 
     history = HistoricalRecords()
 
+    @property
+    def transaction_reference(self):
+        transaction = self.transaction
+        if not transaction:
+            return ""
+        ref = getattr(transaction, "reference", None)
+        if ref:
+            return str(ref)
+        return f"TRANS-{transaction.id}"
+
     def __str__(self):
-        return f"Dispute {self.id} - {self.transaction.reference}"
+        return f"Dispute {self.id} - {self.transaction_reference}"
 
     def save(self, *args, **kwargs):
         status_changed = False 
@@ -69,7 +81,7 @@ class Dispute(models.Model):
                     event_type=event_type,
                     context_data={
                         'dispute_id': self.id,
-                        'reference': self.transaction.reference,
+                        'reference': self.transaction_reference,
                         'status': self._pending_status_email,
                         'reason': self.reason,
                     }

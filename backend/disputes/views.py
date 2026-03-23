@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters import rest_framework as filters
 from .models import Dispute
 from .serializers import DisputeSerializer
+from .supabase import insert_supabase_dispute, update_supabase_dispute
 from adminPanel.permissions import IsAdminSupportOrAbove
 from adminPanel.models import AdminAction
 from adminPanel.utils import get_client_ip
@@ -46,11 +47,12 @@ class DisputeViewSet(viewsets.ModelViewSet):
             event_type='dispute_opened',
             context_data={
                 'dispute_id': dispute.id,
-                'reference': dispute.transaction.reference,
+                'reference': dispute.transaction_reference,
                 'reason': dispute.reason,
                 'status': dispute.status,
             }
         )
+        insert_supabase_dispute(dispute, token=self.request.auth)
 
     def destroy(self, request, *args, **kwargs):
         return Response(
@@ -62,6 +64,7 @@ class DisputeViewSet(viewsets.ModelViewSet):
     def resolve(self, request, pk=None):
         dispute = self.get_object()
         new_status = request.data.get('status')
+        admin_notes = request.data.get('admin_notes')
 
         valid_statuses = ('under_review', 'resolved_client', 'resolved_hustler')
         if new_status not in valid_statuses:
@@ -71,8 +74,11 @@ class DisputeViewSet(viewsets.ModelViewSet):
             )
 
         dispute.status = new_status
+        if admin_notes is not None:
+            dispute.admin_notes = str(admin_notes).strip() or None
         dispute.resolved_by = request.user
         dispute.save()
+        update_supabase_dispute(dispute, token=request.auth)
 
         AdminAction.objects.create(
             admin=request.user,
