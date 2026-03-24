@@ -14,7 +14,7 @@ urlpatterns = [
     path("api/pricing/quote/", pricing_views.PricingQuoteView.as_view()),
     path("api/pricing/overrides/", pricing_views.PricingOverrideListView.as_view()),
     path("api/pricing/overrides/decision/", pricing_views.PricingOverrideDecisionView.as_view()),
-    # path("api/gigs/create/", pricing_views.GigCreateView.as_view()),
+    path("api/pricing/gigs/create", pricing_views.GigCreateView.as_view()),
     
     
     path('api/token/', TokenObtainPairView.as_view()),
